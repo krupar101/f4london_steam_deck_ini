@@ -26,9 +26,10 @@ if [ "$platform" == "g" ]; then
     string1="${array[2]}"
 
     # Capture the output of the second command into a variable
-    string2=$(LANG=en_US.UTF-8 flatpak remote-info flathub com.heroicgameslauncher.hgl | grep "Version:" | awk '{print $2}')
+	string2=$(LANG=en_US.UTF-8 flatpak remote-info flathub com.heroicgameslauncher.hgl | grep "Version:" | awk '{print $2}' || echo "")
 
-    if [[ "$string1" == "$string2" ]]; then
+
+if [[ "$string1" == "$string2" || -z "$string2" ]]; then
         printf "${GREEN}Heroic Launcher is up to date${NC}\n"
 
         # Define the path to the Heroic game configurations
