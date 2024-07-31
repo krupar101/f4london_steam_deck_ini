@@ -74,6 +74,14 @@ if [ "$platform" == "g" ]; then
 		    url="https://raw.githubusercontent.com/krupar101/f4london_steam_deck_ini/main/Fallout4.INI"
 		    destination="$heroic_f4london_steamuser/Documents/My Games/Fallout4/Fallout4.INI"
 		    
+		      if [ -e "$heroic_f4london_steamuser/Documents/My Games/Fallout4/Fallout4.INI" ]; then
+	    		rm "$heroic_f4london_steamuser/Documents/My Games/Fallout4/Fallout4.INI"
+              fi
+
+              if [ -e "$heroic_f4london_steamuser/Documents/My Games/Fallout4/Fallout4.ini" ]; then
+	    		rm "$heroic_f4london_steamuser/Documents/My Games/Fallout4/Fallout4.ini"
+              fi
+
 		    # Download the file using wget
 		    wget -O "$destination" "$url"
 		    
@@ -81,10 +89,6 @@ if [ "$platform" == "g" ]; then
 		    if [ $? -eq 0 ]; then
                 printf "${GREEN}File downloaded successfully to $destination${NC}\n"
 		      
-		      if [ -e "$heroic_f4london_steamuser/Documents/My Games/Fallout4/Fallout4.ini" ]; then
-	    		rm "$heroic_f4london_steamuser/Documents/My Games/Fallout4/Fallout4.ini"
-	    	      fi
-
                 
 		    else
 			printf "${RED}Failed to download the file.${NC}\n"
@@ -346,16 +350,20 @@ fi
 		    url="https://raw.githubusercontent.com/krupar101/f4london_steam_deck_ini/main/Fallout4.INI"
 		    destination="$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.INI"
 		    
+            if [ -e "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.INI" ]; then
+                rm "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.INI"
+            fi
+
+            if [ -e "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.ini" ]; then
+                rm "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.ini"
+            fi
+
 		    # Download the file using wget
 		    wget -O "$destination" "$url"
 		    
 		    # Check if the download was successful
 		    if [ $? -eq 0 ]; then
                 printf "${GREEN}File downloaded successfully to $destination${NC}\n"
-                
-		      if [ -e "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.ini" ]; then
-	    		rm "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.ini"
-	    	      fi
 
 		    else
 			printf "${RED}Failed to download the file.${NC}\n"
