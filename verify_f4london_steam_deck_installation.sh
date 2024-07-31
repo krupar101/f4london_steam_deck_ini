@@ -234,7 +234,8 @@ if [ "$platform" == "g" ]; then
 						# Check if the unzip command was successful
 						if [ $? -eq 0 ]; then
 						    printf "${GREEN}Successfully unzipped '$dropped_file' to '$target_dir'.${NC}\n"
-						    all_prerequisites_met=true
+						    printf "${GREEN}Please close this window and run this script one more time to verify if the installation was fully correct.${NC}\n"
+						    exit 1
 						else
 						    printf "${RED}Error: Failed to install 'Buffout 4' from file '$dropped_file'.${NC}\n"
 						    exit 1
@@ -568,7 +569,8 @@ fi
 						# Check if the unzip command was successful
 						if [ $? -eq 0 ]; then
 						    printf "${GREEN}Successfully unzipped '$dropped_file' to '$target_dir'.${NC}\n"
-						    all_prerequisites_met=true
+						    printf "${GREEN}Please close this window and run this script one more time to verify if the installation was fully correct.${NC}\n"
+						    exit 1
 						else
 						    printf "${RED}Error: Failed to install 'Buffout 4' from file '$dropped_file'.${NC}\n"
 						    exit 1
