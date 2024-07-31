@@ -1,10 +1,19 @@
 #!/bin/bash
 
+#Define default paths to verify
+heroic_f4_path="$HOME/Games/Heroic/Fallout 4 GOTY"
+heroic_f4london_steamuser="$HOME/Games/Heroic/Prefixes/default/Fallout London/pfx/drive_c/users/steamuser"
+steam_f4_path="$HOME/.steam/steam/steamapps/common/Fallout 4"
+steam_f4_steamuser="$HOME/.steam/steam/steamapps/compatdata/377160/pfx/drive_c/users/steamuser"
+fallout_london_installer="$HOME/Games/Heroic/Fallout London"
+
 # Define colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
+
+
 
 # Prompt the user for the game version
 printf "${YELLOW}Fallout London installation verification script for Steam Deck.\nWhich platform are you using? (g for GoG / s for Steam)${NC}\n"
@@ -17,21 +26,6 @@ all_prerequisites_met=false
 if [ "$platform" == "g" ]; then
     printf "${GREEN}GoG Selected${NC}\n"
 
-    # Capture the output of the command into a variable
-    output=$(flatpak list | grep "com.heroicgameslauncher.hgl")
-
-    # Set IFS to tab to split the string by tabs
-    IFS=$'\t' read -r -a array <<< "$output"
-
-    string1="${array[2]}"
-
-    # Capture the output of the second command into a variable
-	string2=$(LANG=en_US.UTF-8 flatpak remote-info flathub com.heroicgameslauncher.hgl | grep "Version:" | awk '{print $2}' || echo "")
-
-
-if [[ "$string1" == "$string2" || -z "$string2" ]]; then
-        printf "${GREEN}Heroic Launcher is up to date${NC}\n"
-
         # Define the path to the Heroic game configurations
         GAME_CONFIG_DIR="$HOME/.var/app/com.heroicgameslauncher.hgl/config/heroic/GamesConfig"
 
@@ -43,7 +37,7 @@ if [[ "$string1" == "$string2" || -z "$string2" ]]; then
 
         # Check if the configuration file exists
         if [ ! -f "$CONFIG_FILE" ]; then
-            printf "${RED}Configuration file for $GAME_NAME not found.${NC}\n"
+            printf "${RED}Configuration file for $GAME_NAME (Fallout London) not found in Heroic Launcher settings.${NC}\n"
             exit 1
         fi
 
@@ -53,12 +47,16 @@ if [[ "$string1" == "$string2" || -z "$string2" ]]; then
         # Check if the WINE_VERSION_NAME matches the specified values
         if [ "$WINE_VERSION_NAME" == "Proton - Proton-GE-Proton9-10" ] || [ "$WINE_VERSION_NAME" == "Proton - Proton - Experimental" ]; then
             printf "${GREEN}Correct Proton version selected in Heroic Launcher: '$WINE_VERSION_NAME'${NC}\n"
-
+        else
+            printf "${RED}Wrong Proton Version selected in Heroic Launcher '$WINE_VERSION_NAME'. Please select either 'Proton - Proton-GE-Proton9-10' or 'Proton - Proton - Experimental'.${NC}\n"
+            exit 1
+        fi
+        
             # Define the given checksum
             given_checksum="82cfb36d003551ee5db7fb3321e830e1bceed53aa74aa30bb49bf0278612a9d7"
 
             # Define the file path
-            file_path="$HOME/Games/Heroic/Prefixes/default/Fallout London/pfx/drive_c/users/steamuser/Documents/My Games/Fallout4/Fallout4.INI"
+            file_path="$heroic_f4london_steamuser/Documents/My Games/Fallout4/Fallout4.INI"
 
             # Compute the SHA-256 checksum of the file
             computed_checksum=$(sha256sum "$file_path" | awk '{ print $1 }')
@@ -66,7 +64,37 @@ if [[ "$string1" == "$string2" || -z "$string2" ]]; then
             # Compare the computed checksum with the given checksum
             if [ "$computed_checksum" == "$given_checksum" ]; then
                 printf "${GREEN}Fallout4.INI correctly placed${NC}\n"
+            else
+                printf "${RED}Fallout4.INI checksum does not match. Please make sure you put the file from: https://github.com/krupar101/f4london_steam_deck_ini/blob/main/Fallout4.INI inside '$heroic_f4london_steamuser/Documents/My Games/Fallout4/Fallout4.INI'.${NC}\n"
+        printf "${YELLOW}Do you want to download the correct .INI file from GitHub automatically? (y/n) ${NC}\n"
+        read -p "" user_input
 
+		if [ "$user_input" == "y" ]; then
+		    # Define the download URL and destination path
+		    url="https://raw.githubusercontent.com/krupar101/f4london_steam_deck_ini/main/Fallout4.INI"
+		    destination="$heroic_f4london_steamuser/Documents/My Games/Fallout4/Fallout4.INI"
+		    
+		    # Download the file using wget
+		    wget -O "$destination" "$url"
+		    
+		    # Check if the download was successful
+		    if [ $? -eq 0 ]; then
+                printf "${GREEN}File downloaded successfully to $destination${NC}\n"
+		      
+		      if [ -e "$heroic_f4london_steamuser/Documents/My Games/Fallout4/Fallout4.ini" ]; then
+	    		rm "$heroic_f4london_steamuser/Documents/My Games/Fallout4/Fallout4.ini"
+	    	      fi
+
+                
+		    else
+			printf "${RED}Failed to download the file.${NC}\n"
+		    fi
+		else
+		    echo "User exited the script"
+		    exit 1
+		fi
+            fi
+            
                 # Define the path to the Proton prefix
                 PROTONPREFIX="$HOME/Games/Heroic/Prefixes/default/Fallout London/pfx"
 
@@ -76,10 +104,14 @@ if [[ "$string1" == "$string2" || -z "$string2" ]]; then
                 # Check if the FAudio.dll file exists
                 if [ -f "$FAudio_FILE" ]; then
                     printf "${GREEN}FAudio.dll is installed${NC}\n"  # Green for file found
-
+                else
+                    printf "${RED}FAudio.dll is not installed in the Proton prefix. Please refer to step 11 of the instructions on https://www.reddit.com/r/fallout4london/comments/1ebrc74/steam_deck_instructions/ for GoG Fallout London installation${NC}\n"  # Red for file not found
+                    exit 1
+                fi
+                
                     # Define folder paths
-                    FOLDER1="$HOME/Games/Heroic/Fallout 4 GOTY/Data/F4SE/plugins"
-                    FOLDER2="$HOME/Games/Heroic/Fallout 4 GOTY/Data/F4SE/Plugins"
+                    FOLDER1="$heroic_f4_path/Data/F4SE/plugins"
+                    FOLDER2="$heroic_f4_path/Data/F4SE/Plugins"
 
                     # Check if the "plugins" folder exists
                     if [ -d "$FOLDER1" ]; then
@@ -109,8 +141,8 @@ if [[ "$string1" == "$string2" || -z "$string2" ]]; then
                     fi
 
                     # Define file paths
-                    file1="$HOME/Games/Heroic/Prefixes/default/Fallout London/pfx/drive_c/users/steamuser/Documents/My Games/Fallout4/Fallout4Custom.ini"
-                    file2="$HOME/Games/Heroic/Prefixes/default/Fallout London/pfx/drive_c/users/steamuser/Documents/My Games/Fallout4/Fallout4Prefs.ini"
+                    file1="$heroic_f4london_steamuser/Documents/My Games/Fallout4/Fallout4Custom.ini"
+                    file2="$heroic_f4london_steamuser/Documents/My Games/Fallout4/Fallout4Prefs.ini"
 
                     # Initialize flags
                     file1_removed=false
@@ -157,9 +189,9 @@ if [[ "$string1" == "$string2" || -z "$string2" ]]; then
                     fi
 
                     # Define the path for Buffout Mod files
-                    BUFFOUT_FOLDER="$HOME/Games/Heroic/Fallout 4 GOTY/Data/F4SE/Plugins/Buffout4"
-                    BUFFOUT_DLL="$HOME/Games/Heroic/Fallout 4 GOTY/Data/F4SE/Plugins/Buffout4.dll"
-                    BUFFOUT_PRELOAD="$HOME/Games/Heroic/Fallout 4 GOTY/Data/F4SE/Plugins/Buffout4_preload.txt"
+                    BUFFOUT_FOLDER="$heroic_f4_path/Data/F4SE/Plugins/Buffout4"
+                    BUFFOUT_DLL="$heroic_f4_path/Data/F4SE/Plugins/Buffout4.dll"
+                    BUFFOUT_PRELOAD="$heroic_f4_path/Data/F4SE/Plugins/Buffout4_preload.txt"
 
                     # Check if the Buffout Mod folder and files exist
                     if [ -d "$BUFFOUT_FOLDER" ] && [ -f "$BUFFOUT_DLL" ] && [ -f "$BUFFOUT_PRELOAD" ]; then
@@ -167,6 +199,52 @@ if [[ "$string1" == "$string2" || -z "$string2" ]]; then
                         printf "${GREEN}'Buffout 4' Mod is recognized to be installed.${NC}\n"
                     else
                         printf "${RED}Buffout Mod is not installed. You may experience crashes during the Gameplay of Fallout London.${NC}\n"
+
+				# Ask the user if they want to perform assisted installation
+				printf "${YELLOW}Do you want to perform assisted installation of 'Buffout 4' mod with this script? (y/n)${NC}\n"
+
+				# Read user input
+				read -r user_input
+
+				# Check the user input
+				if [ "$user_input" == "n" ]; then
+				    printf "${RED}'Buffout 4' mod is not installed${NC}\n"
+				elif [ "$user_input" == "y" ]; then
+				    printf "${YELLOW}1. Please download 'Buffout 4' mod from nexus (https://www.nexusmods.com/fallout4/mods/47359) \n2. Drag and drop the downloaded zip file on this window\n3. press enter.${NC}\n"
+				    
+				    # Read the full path of the dropped file
+				    read -r dropped_file
+				    
+				        # Remove single quotes and replace with double quotes
+					dropped_file="${dropped_file//\'/}"
+				    # Check if the file exists
+				    if [ -f "$dropped_file" ]; then
+					printf "${GREEN}File dropped: ${dropped_file}${NC}\n"
+					
+					# Define the target directory
+						target_dir="$heroic_f4_path/Data"
+
+						# Unzip the file to the target directory
+						unzip -o "$dropped_file" -d "$target_dir"
+
+						# Check if the unzip command was successful
+						if [ $? -eq 0 ]; then
+						    printf "${GREEN}Successfully unzipped '$dropped_file' to '$target_dir'.${NC}\n"
+						    all_prerequisites_met=true
+						else
+						    printf "${RED}Error: Failed to install 'Buffout 4' from file '$dropped_file'.${NC}\n"
+						    exit 1
+						fi
+				    else
+					printf "${RED}The dropped file does not exist. Please run the script again.${NC}\n"
+					exit 1
+				    fi
+				else
+				    printf "${RED}Invalid input. Please respond with 'y' or 'n'.${NC}\n"
+				    exit 1
+				fi
+
+
                     fi
 
                     # Display the final message if all prerequisites are met
@@ -174,28 +252,12 @@ if [[ "$string1" == "$string2" || -z "$string2" ]]; then
                         printf "${GREEN}Fallout London should be ready to run from Heroic Launcher's Fallout London page.${NC}\n"
                     fi
 
-                else
-                    printf "${RED}FAudio.dll is not installed in the Proton prefix. Please refer to step 11 of the instructions on https://www.reddit.com/r/fallout4london/comments/1ebrc74/steam_deck_instructions/ for GoG Fallout London installation${NC}\n"  # Red for file not found
-                fi
-
-            else
-                printf "${RED}Fallout4.INI checksum does not match. Please make sure you put the file from: https://github.com/krupar101/f4london_steam_deck_ini/blob/main/Fallout4.INI inside '$HOME/Games/Heroic/Prefixes/default/Fallout London/pfx/drive_c/users/steamuser/Documents/My Games/Fallout4/Fallout4.INI'.${NC}\n"
-                exit 1
-            fi
-
-        else
-            printf "${RED}Wrong Proton Version selected in Heroic Launcher '$WINE_VERSION_NAME'. Please select either 'Proton - Proton-GE-Proton9-10' or 'Proton - Proton - Experimental'.${NC}\n"
-        fi
-
-    else
-        printf "${RED}Update Heroic Games Launcher from the discover store.${NC}\n"
-    fi
 
 elif [ "$platform" == "s" ]; then
     printf "${GREEN}Steam Selected${NC}\n"
     
     	fallout4defaultlauncher="75065f52666b9a2f3a76d9e85a66c182394bfbaa8e85e407b1a936adec3654cc"
-    	fallout4defaultlauncher_check=$(sha256sum "$HOME/.steam/steam/steamapps/common/Fallout 4/Fallout4Launcher.exe" | awk '{print $1}')
+    	fallout4defaultlauncher_check=$(sha256sum "$steam_f4_path/Fallout4Launcher.exe" | awk '{print $1}')
     	
     	if [ "$fallout4defaultlauncher" == "$fallout4defaultlauncher_check" ]; then
     		    printf "${RED}You are using standard Fallout 4 launcher exe. Your Game is not downgraded.${NC}\n"
@@ -207,12 +269,12 @@ elif [ "$platform" == "s" ]; then
 
 fallout4defaultlauncher_downg="5e457259dca72c8d1217e2f08a981b630ffd5fe0d30bf28269c8b7898491c6ae"
 correct_launcher_sha="f41d4065a1da80d4490be0baeee91985d2b10b3746ec708b91dc82a64ec1e2a6"
-fallout4defaultlauncher_downg_check=$(sha256sum "$HOME/.steam/steam/steamapps/common/Fallout 4/Fallout4Launcher.exe" | awk '{print $1}')
+fallout4defaultlauncher_downg_check=$(sha256sum "$steam_f4_path/Fallout4Launcher.exe" | awk '{print $1}')
 
 if [ "$fallout4defaultlauncher_downg" == "$fallout4defaultlauncher_downg_check" ]; then
     printf "${RED}You are using a downgraded standard Fallout 4 launcher exe.${NC}\n"
 
-    launcher_dir="$HOME/.steam/steam/steamapps/common/Fallout 4"
+    launcher_dir="$steam_f4_path"
     launcher_file="$launcher_dir/Fallout4Launcher.exe"
     f4se_loader_file="$launcher_dir/f4se_loader.exe"
     launcher_old_file="$launcher_dir/Fallout4Launcher.exe.old"
@@ -242,7 +304,7 @@ if [ "$fallout4defaultlauncher_downg" == "$fallout4defaultlauncher_downg_check" 
 else
     printf "${GREEN}Correct. Game does not launch with standard downgraded launcher${NC}\n"
 
-    launcher_dir="$HOME/.steam/steam/steamapps/common/Fallout 4"
+    launcher_dir="$steam_f4_path"
     launcher_file="$launcher_dir/Fallout4Launcher.exe"
     launcher_check=$(sha256sum "$launcher_file" | awk '{print $1}')
 
@@ -261,7 +323,7 @@ fi
             given_checksum="82cfb36d003551ee5db7fb3321e830e1bceed53aa74aa30bb49bf0278612a9d7"
 
             # Define the file path
-            file_path="$HOME/.steam/steam/steamapps/compatdata/377160/pfx/drive_c/users/steamuser/Documents/My Games/Fallout4/Fallout4.INI"
+            file_path="$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.INI"
 
 
 
@@ -274,13 +336,41 @@ fi
                 
             else
                 printf "${RED}Fallout4.INI checksum does not match. Please make sure you put the file from: https://github.com/krupar101/f4london_steam_deck_ini/blob/main/Fallout4.INI inside '$file_path'.${NC}\n"
-               exit 1
+                
+                
+        printf "${YELLOW}Do you want to download the correct .INI file from GitHub automatically? (y/n) ${NC}\n"
+        read -p "" user_input
+
+		if [ "$user_input" == "y" ]; then
+		    # Define the download URL and destination path
+		    url="https://raw.githubusercontent.com/krupar101/f4london_steam_deck_ini/main/Fallout4.INI"
+		    destination="$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.INI"
+		    
+		    # Download the file using wget
+		    wget -O "$destination" "$url"
+		    
+		    # Check if the download was successful
+		    if [ $? -eq 0 ]; then
+                printf "${GREEN}File downloaded successfully to $destination${NC}\n"
+                
+		      if [ -e "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.ini" ]; then
+	    		rm "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.ini"
+	    	      fi
+
+		    else
+			printf "${RED}Failed to download the file.${NC}\n"
+		    fi
+		else
+		    echo "User exited the script"
+		    exit 1
+		fi
+
             fi
 
 		# Define the directories and files
-		TARGET_DIR="$HOME/.steam/steam/steamapps/compatdata/377160/pfx/drive_c/users/steamuser/AppData/Local/Fallout4"
+		TARGET_DIR="$steam_f4_steamuser/AppData/Local/Fallout4"
 		BACKUP_DIR="$TARGET_DIR/backup"
-		FALLOUT_DIR="$HOME/Games/Heroic/Fallout London/__AppData"
+		FALLOUT_DIR="$fallout_london_installer/__AppData"
 		FILES=("DLCList.txt" "Plugins.fo4viewsettings" "Plugins.txt" "UserDownloadedContent.txt")
 
 		# Check if the target directory exists
@@ -348,8 +438,8 @@ fi
 		
 		
                     # Define folder paths
-                    FOLDER1="$HOME/.steam/steam/steamapps/common/Fallout 4/Data/F4SE/plugins"
-                    FOLDER2="$HOME/.steam/steam/steamapps/common/Fallout 4/Data/F4SE/Plugins"
+                    FOLDER1="$steam_f4_path/Data/F4SE/plugins"
+                    FOLDER2="$steam_f4_path/Data/F4SE/Plugins"
 
 
                     # Check if the "plugins" folder exists
@@ -381,8 +471,8 @@ fi
                     fi
 
                     # Define file paths
-                    file1="$HOME/.steam/steam/steamapps/compatdata/377160/pfx/drive_c/users/steamuser/Documents/My Games/Fallout4/Fallout4Custom.ini"
-                    file2="$HOME/.steam/steam/steamapps/compatdata/377160/pfx/drive_c/users/steamuser/Documents/My Games/Fallout4/Fallout4Prefs.ini"
+                    file1="$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4Custom.ini"
+                    file2="$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4Prefs.ini"
 
                     # Initialize flags
                     file1_removed=false
@@ -429,9 +519,9 @@ fi
                     fi
 
                     # Define the path for Buffout Mod files
-                    BUFFOUT_FOLDER="$HOME/.steam/steam/steamapps/common/Fallout 4/Data/F4SE/Plugins/Buffout4"
-                    BUFFOUT_DLL="$HOME/.steam/steam/steamapps/common/Fallout 4/Data/F4SE/Plugins/Buffout4.dll"
-                    BUFFOUT_PRELOAD="$HOME/.steam/steam/steamapps/common/Fallout 4/Data/F4SE/Plugins/Buffout4_preload.txt"
+                    BUFFOUT_FOLDER="$steam_f4_path/Data/F4SE/Plugins/Buffout4"
+                    BUFFOUT_DLL="$steam_f4_path/Data/F4SE/Plugins/Buffout4.dll"
+                    BUFFOUT_PRELOAD="$steam_f4_path/Data/F4SE/Plugins/Buffout4_preload.txt"
 
                     # Check if the Buffout Mod folder and files exist
                     if [ -d "$BUFFOUT_FOLDER" ] && [ -f "$BUFFOUT_DLL" ] && [ -f "$BUFFOUT_PRELOAD" ]; then
@@ -439,6 +529,51 @@ fi
                         printf "${GREEN}'Buffout 4' Mod is recognized to be installed.${NC}\n"
                     else
                         printf "${RED}Buffout Mod is not installed. You may experience crashes during the Gameplay of Fallout London.${NC}\n"
+                        
+				# Ask the user if they want to perform assisted installation
+				printf "${YELLOW}Do you want to perform assisted installation of 'Buffout 4' mod with this script? (y/n)${NC}\n"
+
+				# Read user input
+				read -r user_input
+
+				# Check the user input
+				if [ "$user_input" == "n" ]; then
+				    printf "${RED}'Buffout 4' mod is not installed${NC}\n"
+				elif [ "$user_input" == "y" ]; then
+				    printf "${YELLOW}1. Please download 'Buffout 4' mod from nexus (https://www.nexusmods.com/fallout4/mods/47359) \n2. Drag and drop the downloaded zip file on this window\n3. press enter.${NC}\n"
+				    
+				    # Read the full path of the dropped file
+				    read -r dropped_file
+				    
+				        # Remove single quotes and replace with double quotes
+					dropped_file="${dropped_file//\'/}"
+				    # Check if the file exists
+				    if [ -f "$dropped_file" ]; then
+					printf "${GREEN}File dropped: ${dropped_file}${NC}\n"
+					
+					# Define the target directory
+						target_dir="$steam_f4_path/Data"
+
+						# Unzip the file to the target directory
+						unzip -o "$dropped_file" -d "$target_dir"
+
+						# Check if the unzip command was successful
+						if [ $? -eq 0 ]; then
+						    printf "${GREEN}Successfully unzipped '$dropped_file' to '$target_dir'.${NC}\n"
+						    all_prerequisites_met=true
+						else
+						    printf "${RED}Error: Failed to install 'Buffout 4' from file '$dropped_file'.${NC}\n"
+						    exit 1
+						fi
+				    else
+					printf "${RED}The dropped file does not exist. Please run the script again.${NC}\n"
+					exit 1
+				    fi
+				else
+				    printf "${RED}Invalid input. Please respond with 'y' or 'n'.${NC}\n"
+				    exit 1
+				fi
+                        
                     fi
 
                     # Display the final message if all prerequisites are met
