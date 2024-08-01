@@ -13,10 +13,12 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-
+echo "This script is directly related to Fallout London Steam Deck installation instructions published in this reddit thread: https://www.reddit.com/r/fallout4london/comments/1ebrc74/steam_deck_instructions/"
+echo ""
+echo ""
 
 # Prompt the user for the game version
-printf "${YELLOW}Fallout London installation verification script for Steam Deck.\nWhich platform are you using? (g for GoG / s for Steam)${NC}\n"
+printf "${YELLOW}Fallout London installation verification script for Steam Deck.\nWhich version of the instructions did you follow? ('g' for GoG / 's' for Steam)${NC}\n"
 read platform
 
 # Initialize prerequisites flag
@@ -234,8 +236,15 @@ if [ "$platform" == "g" ]; then
 						# Check if the unzip command was successful
 						if [ $? -eq 0 ]; then
 						    printf "${GREEN}Successfully unzipped '$dropped_file' to '$target_dir'.${NC}\n"
-						    printf "${GREEN}Please close this window and run this script one more time to verify if the installation was fully correct.${NC}\n"
-						    exit 1
+						    
+						    if [ -d "$BUFFOUT_FOLDER" ] && [ -f "$BUFFOUT_DLL" ] && [ -f "$BUFFOUT_PRELOAD" ]; then
+							all_prerequisites_met=true
+							printf "${GREEN}'Buffout 4' Mod is recognized to be installed.${NC}\n"
+						    else
+							printf "${RED}'Buffout 4' installation failed. Please try again or install it manually.${NC}\n"
+							exit 1
+						    fi
+						    
 						else
 						    printf "${RED}Error: Failed to install 'Buffout 4' from file '$dropped_file'.${NC}\n"
 						    exit 1
@@ -569,8 +578,14 @@ fi
 						# Check if the unzip command was successful
 						if [ $? -eq 0 ]; then
 						    printf "${GREEN}Successfully unzipped '$dropped_file' to '$target_dir'.${NC}\n"
-						    printf "${GREEN}Please close this window and run this script one more time to verify if the installation was fully correct.${NC}\n"
-						    exit 1
+
+						    if [ -d "$BUFFOUT_FOLDER" ] && [ -f "$BUFFOUT_DLL" ] && [ -f "$BUFFOUT_PRELOAD" ]; then
+							all_prerequisites_met=true
+							printf "${GREEN}'Buffout 4' Mod is recognized to be installed.${NC}\n"
+						    else
+							printf "${RED}'Buffout 4' installation failed. Please try again or install it manually.${NC}\n"
+							exit 1
+						    fi
 						else
 						    printf "${RED}Error: Failed to install 'Buffout 4' from file '$dropped_file'.${NC}\n"
 						    exit 1
@@ -583,8 +598,36 @@ fi
 				    printf "${RED}Invalid input. Please respond with 'y' or 'n'.${NC}\n"
 				    exit 1
 				fi
-                        
                     fi
+
+			# Define the file path
+			FILE="$HOME/.steam/steam/steamapps/appmanifest_377160.acf"
+			current_permissions=$(stat -c '%a' "$FILE")
+			# Check if the file has the immutable attribute set
+			
+			if [ "$current_permissions" -eq 444 ]; then
+			    printf "${GREEN}Automatic updates for Steam version of Fallout 4 are disabled. \n\n${RED}If you ever want to re-enable automatic updates for Fallout 4, run this command in konsole:\nchmod 775 \"$FILE\"${NC}\n\n"
+			else
+			    printf "${YELLOW}(Optional Step) Automatic updates for Steam version of Fallout 4 are enabled. Do you want to disable Steam automatic updates for Fallout 4? \n\nTHIS ACTION IS PERMANENT AND WILL REQUIRE YOU TO RUN A COMMAND IN CONSOLE TO REVERT IT BACK! (y/n)${NC}\n"
+
+			    # Read user response
+			    read response
+			    
+			    # Convert response to lowercase
+			    response=$(echo "$response" | tr '[:upper:]' '[:lower:]')
+
+			    if [[ "$response" == "y" ]]; then
+				chmod 444 "$FILE"
+				
+			    printf "${GREEN}Automatic updates for Steam version of Fallout 4 are disabled. \n\n${RED}If you ever want to re-enable automatic updates for Fallout 4, run this command in konsole:\nchmod 775 \"$FILE\"${NC}\n\n"
+			    
+			    elif [[ "$response" == "n" ]]; then
+				printf "${RED}You decided not to disable automatic updates for Fallout 4. The game may still be automatically updated through Steam which can break the Fallout London installation.${NC}\n"
+			    else
+				printf "${RED}Invalid response. Please enter 'y' or 'n'.${NC}\n"
+				exit 1
+			    fi
+			fi
 
                     # Display the final message if all prerequisites are met
                     if [ "$all_prerequisites_met" = true ]; then
