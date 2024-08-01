@@ -261,6 +261,36 @@ if [ "$platform" == "g" ]; then
 
                     fi
 
+			# Path to the config file
+			config_file="$heroic_f4_path/Data/F4SE/Plugins/Buffout4/config.toml"
+
+			# Check if the config file exists
+			if [[ -f "$config_file" ]]; then
+			    # Read the current value of MemoryManager
+			    memory_manager_value=$(grep -E '^MemoryManager = (true|false)' "$config_file" | awk '{print $3}')
+
+			    if [[ "$memory_manager_value" == "true" ]]; then
+				# Prompt the user
+				
+			printf "${YELLOW}'(Optional step) 'Buffout 4' Mod currently replaces Fallout London's Memory Manager. It is recommended to disable this feature of 'Buffout 4'. Do you want to disable it? (y/n)${NC}\n"
+				
+				read user_input
+				if [[ "$user_input" == "y" || "$user_input" == "Y" ]]; then
+				    # Change the line to MemoryManager = false
+				    sed -i 's/^MemoryManager = true/MemoryManager = false/' "$config_file"
+				    printf "${GREEN}MemoryManager has been disabled in the 'Buffout 4' config.${NC}\n"
+				else
+				    printf "${RED}No changes were made to the 'Buffout 4' config.${NC}\n"
+				fi
+			    elif [[ "$memory_manager_value" == "false" ]]; then
+				 printf "${GREEN}MemoryManager has been disabled in the 'Buffout 4' config.${NC}\n"
+			    else
+				printf "${RED}The MemoryManager setting was not found or is not set to true/false.${NC}\n"
+			    fi
+			else
+			    printf "${RED}Config file not found: $config_file${NC}\n"
+			fi
+
                     # Display the final message if all prerequisites are met
                     if [ "$all_prerequisites_met" = true ]; then
                         printf "${GREEN}Fallout London should be ready to run from Heroic Launcher's Fallout London page.${NC}\n"
@@ -600,6 +630,37 @@ fi
 				fi
                     fi
 
+			# Path to the config file
+			config_file="$steam_f4_path/Data/F4SE/Plugins/Buffout4/config.toml"
+
+			# Check if the config file exists
+			if [[ -f "$config_file" ]]; then
+			    # Read the current value of MemoryManager
+			    memory_manager_value=$(grep -E '^MemoryManager = (true|false)' "$config_file" | awk '{print $3}')
+
+			    if [[ "$memory_manager_value" == "true" ]]; then
+				# Prompt the user
+				
+			printf "${YELLOW}'(Optional step) 'Buffout 4' Mod currently replaces Fallout London's Memory Manager. It is recommended to disable this feature of 'Buffout 4'. Do you want to disable it? (y/n)${NC}\n"
+				
+				read user_input
+				if [[ "$user_input" == "y" || "$user_input" == "Y" ]]; then
+				    # Change the line to MemoryManager = false
+				    sed -i 's/^MemoryManager = true/MemoryManager = false/' "$config_file"
+				    printf "${GREEN}MemoryManager has been disabled in the 'Buffout 4' config.${NC}\n"
+				else
+				    printf "${RED}No changes were made to the 'Buffout 4' config.${NC}\n"
+				fi
+			    elif [[ "$memory_manager_value" == "false" ]]; then
+				 printf "${GREEN}MemoryManager has been disabled in the 'Buffout 4' config.${NC}\n"
+			    else
+				printf "${RED}The MemoryManager setting was not found or is not set to true/false.${NC}\n"
+			    fi
+			else
+			    printf "${RED}Config file not found: $config_file${NC}\n"
+			fi
+
+
 			# Define the file path
 			FILE="$HOME/.steam/steam/steamapps/appmanifest_377160.acf"
 			current_permissions=$(stat -c '%a' "$FILE")
@@ -633,6 +694,8 @@ fi
                     if [ "$all_prerequisites_met" = true ]; then
                         printf "${GREEN}Fallout London should be ready to run from the Steam Fallout 4 Page.${NC}\n"
                     fi
+
+
 
 else
     printf "${RED}Invalid choice. Please enter 'g' for GoG or 's' for Steam.${NC}\n"
