@@ -11,8 +11,8 @@ if [ -d "$my_path/Fallout London" ]; then
 	if [ -d "$my_path/Fallout 4 Game of the Year Edition" ]; then
 	  # Rename it to "Fallout 4 Game of the Year Edition old"
 	  mv "$my_path/Fallout 4 Game of the Year Edition" "$my_path/Fallout 4 Game of the Year Edition old"
+    	  mv "$my_path/Fallout London" "$my_path/Fallout 4 Game of the Year Edition"
 	fi
-  mv "$my_path/Fallout London" "$my_path/Fallout 4 Game of the Year Edition"
 fi
 
 # Check if the files exist
