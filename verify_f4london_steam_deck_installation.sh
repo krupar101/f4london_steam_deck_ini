@@ -196,6 +196,31 @@ if [ "$platform" == "g" ]; then
                         file2_removed=true
                     fi
 
+			# Define the folder location
+			FOLDER_LOCATION="$heroic_f4_path/Data"
+
+			# Check for files starting with cc in the folder
+			FILES=$(find "$FOLDER_LOCATION" -name 'cc*' 2>/dev/null)
+
+			if [ -n "$FILES" ]; then
+			    # Files found, prompt the user
+				printf "${YELLOW}Creation Club items are recognized to be installed for Fallout 4. Those files should be removed to ensure Fallout London runs properly. Do you want to remove them? (y/n)${NC}\n"
+			    read response
+			    
+			    if [ "$response" = "y" ] || [ "$response" = "Y" ]; then
+				# User wants to remove the files
+				rm -f "${FOLDER_LOCATION}/cc"*
+				printf "${GREEN}Creation Club files have been removed.${NC}\n"
+			    else
+				# User does not want to remove the files
+				printf "${RED}Creation Club files are present in Fallout 4 directory. Configuration incorrect.${NC}\n"
+				exit 1
+			    fi
+			else
+			    # No files found
+			    printf "${GREEN}No Creation Club items are installed.${NC}\n"
+			fi
+
                     # Define the path for Buffout Mod files
                     BUFFOUT_FOLDER="$heroic_f4_path/Data/F4SE/Plugins/Buffout4"
                     BUFFOUT_DLL="$heroic_f4_path/Data/F4SE/Plugins/Buffout4.dll"
@@ -567,6 +592,31 @@ fi
                         # Mark as removed if it did not exist to account for this in the final message
                         file2_removed=true
                     fi
+
+			# Define the folder location
+			FOLDER_LOCATION="$steam_f4_path/Data"
+
+			# Check for files starting with cc in the folder
+			FILES=$(find "$FOLDER_LOCATION" -name 'cc*' 2>/dev/null)
+
+			if [ -n "$FILES" ]; then
+			    # Files found, prompt the user
+				printf "${YELLOW}Creation Club items are recognized to be installed for Fallout 4. Those files should be removed to ensure Fallout London runs properly. Do you want to remove them? (y/n)${NC}\n"
+			    read response
+			    
+			    if [ "$response" = "y" ] || [ "$response" = "Y" ]; then
+				# User wants to remove the files
+				rm -f "${FOLDER_LOCATION}/cc"*
+				printf "${GREEN}Creation Club files have been removed.${NC}\n"
+			    else
+				# User does not want to remove the files
+				printf "${RED}Creation Club files are present in Fallout 4 directory. Configuration incorrect.${NC}\n"
+				exit 1
+			    fi
+			else
+			    # No files found
+			    printf "${GREEN}No Creation Club items are installed.${NC}\n"
+			fi
 
                     # Define the path for Buffout Mod files
                     BUFFOUT_FOLDER="$steam_f4_path/Data/F4SE/Plugins/Buffout4"
