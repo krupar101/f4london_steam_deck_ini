@@ -13,6 +13,8 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+
+echo ""
 echo "This script is directly related to Fallout London Steam Deck installation instructions published in this reddit thread: https://www.reddit.com/r/fallout4london/comments/1ebrc74/steam_deck_instructions/"
 echo ""
 echo ""
@@ -661,34 +663,108 @@ fi
 			fi
 
 
-			# Define the file path
-			FILE="$HOME/.steam/steam/steamapps/appmanifest_377160.acf"
-			current_permissions=$(stat -c '%a' "$FILE")
-			# Check if the file has the immutable attribute set
-			
-			if [ "$current_permissions" -eq 444 ]; then
-			    printf "${GREEN}Automatic updates for Steam version of Fallout 4 are disabled. \n\n${RED}If you ever want to re-enable automatic updates for Fallout 4, run this command in konsole:\nchmod 775 \"$FILE\"${NC}\n\n"
+
+FILE="$HOME/.steam/steam/steamapps/appmanifest_377160.acf"
+
+display_f4update_escape_message() {
+printf "${RED}You decided not to disable automatic updates for Fallout 4. The game may still be automatically updated through Steam which can break the Fallout London installation.${NC}\n"
+}
+
+# Check if the file exists first
+if [ -e "$FILE" ]; then
+	# Get the attributes of the file
+	attributes=$(lsattr "$FILE" 2>/dev/null | awk '{print $1}')
+
+	# Check if the immutable attribute 'i' is set
+	if [[ $attributes == *i* ]]; then
+		printf "${GREEN}Automatic updates for Steam version of Fallout 4 are disabled. \n\n${RED}If you ever want to re-enable automatic updates for Fallout 4, run this command in konsole:\nsudo chattr -i \"$FILE\"${NC}\n\n"
+	else
+
+		printf "${YELLOW}(Optional Step) Automatic updates for Steam version of Fallout 4 are enabled. Do you want to disable Steam automatic updates for Fallout 4? \n\n- THIS ACTION IS PERMANENT AND WILL REQUIRE YOU TO RUN A COMMAND IN CONSOLE TO REVERT IT BACK!\n- THIS COMMAND REQUIRES SUPER USER (SUDO) PRIVILEGES.\n- YOU WILL NEED TO PROVIDE SUDO PASSWORD TO PERFORM THIS STEP. (y/n)${NC}\n"
+
+		# Read user response
+		read response
+
+		# Convert response to lowercase
+		response=$(echo "$response" | tr '[:upper:]' '[:lower:]')
+
+		if [[ "$response" == "y" ]]; then
+
+			# Prompt the user with the question
+			printf "${YELLOW}If you don't know what you're doing it's recommended not to perform this action. \nAre you sure you want to continue? (y/n)${NC}\n"
+
+			# Read the user's response
+			read response
+
+			# Evaluate the response
+			if [ "$response" = "y" ] || [ "$response" = "Y" ]; then
+
+				# Get the password status for the current user
+				PASS_STATUS=$(passwd -S $USER 2>/dev/null)
+
+				# Extract the status field from the output
+				STATUS=${PASS_STATUS:${#USER}+1:2}
+
+				password_set="N"
+
+				if [ "$STATUS" = "NP" ]; then
+
+					printf "${RED}PASSWORD NOT SET${NC}\n"
+
+					# Prompt the user with the question
+					printf "${YELLOW}It looks like you don't have a SUDO password set for $USER user. Do you want to set it right now? (y/n)${NC}\n"
+
+					# Read the user's response
+					read response
+
+					# Evaluate the response
+					if [ "$response" = "y" ] || [ "$response" = "Y" ]; then
+						passwd
+						password_set="Y"
+						printf "${GREEN}SUDO Password is set for the user $USER${NC}\n"
+					elif [ "$response" = "n" ] || [ "$response" = "N" ]; then
+						display_f4update_escape_message
+					else
+						printf "${RED}Invalid response. Please enter 'y' or 'n'.${NC}\n"
+					fi
+
+				else
+					printf "${GREEN}SUDO Password is set for the user $USER.${NC}\n"
+					password_set="Y"
+				fi
+
+			elif
+				[ "$response" = "n" ] || [ "$response" = "N" ]
+			then
+				display_f4update_escape_message
 			else
-			    printf "${YELLOW}(Optional Step) Automatic updates for Steam version of Fallout 4 are enabled. Do you want to disable Steam automatic updates for Fallout 4? \n\nTHIS ACTION IS PERMANENT AND WILL REQUIRE YOU TO RUN A COMMAND IN CONSOLE TO REVERT IT BACK! (y/n)${NC}\n"
-
-			    # Read user response
-			    read response
-			    
-			    # Convert response to lowercase
-			    response=$(echo "$response" | tr '[:upper:]' '[:lower:]')
-
-			    if [[ "$response" == "y" ]]; then
-				chmod 444 "$FILE"
-				
-			    printf "${GREEN}Automatic updates for Steam version of Fallout 4 are disabled. \n\n${RED}If you ever want to re-enable automatic updates for Fallout 4, run this command in konsole:\nchmod 775 \"$FILE\"${NC}\n\n"
-			    
-			    elif [[ "$response" == "n" ]]; then
-				printf "${RED}You decided not to disable automatic updates for Fallout 4. The game may still be automatically updated through Steam which can break the Fallout London installation.${NC}\n"
-			    else
-				printf "${RED}Invalid response. Please enter 'y' or 'n'.${NC}\n"
-				exit 1
-			    fi
+				printf "${RED}Invalid response. Please enter y or n.${NC}\n"
 			fi
+
+			if [ "$password_set" = "Y" ]; then
+				printf "\n${YELLOW}Please provide your password to disable Steam Automatic Updates for Fallout 4.${NC}\n"
+				sudo chattr +i "$FILE"
+				printf "${GREEN}Automatic updates for Steam version of Fallout 4 are disabled. \n\n${RED}If you ever want to re-enable automatic updates for Fallout 4, run this command in konsole:\nsudo chattr -i \"$FILE\"${NC}\n\n"
+			fi
+
+		elif
+			[[ "$response" == "n" ]]
+		then
+			display_f4update_escape_message
+		else
+			printf "${RED}Invalid response. Please enter 'y' or 'n'. Please run the script again.${NC}\n"
+			exit 1
+		fi
+
+	fi
+
+else
+
+	printf "${RED}file $file does not exist.${NC}\n"
+
+fi
+
+
 
                     # Display the final message if all prerequisites are met
                     if [ "$all_prerequisites_met" = true ]; then
