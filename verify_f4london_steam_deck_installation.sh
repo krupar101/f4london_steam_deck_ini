@@ -102,7 +102,78 @@ if [ "$platform" == "g" ]; then
 		    exit 1
 		fi
             fi
-            
+
+
+		# Define the directories and files
+		TARGET_DIR="$heroic_f4london_steamuser/AppData/Local/Fallout4"
+		BACKUP_DIR="$TARGET_DIR/backup"
+		FALLOUT_DIR="$fallout_london_installer/__AppData"
+		FILES=("DLCList.txt" "Plugins.fo4viewsettings" "Plugins.txt" "UserDownloadedContent.txt")
+
+		# Check if the target directory exists
+		if [ -d "$TARGET_DIR" ]; then
+		    printf "${GREEN}AppData Directory Exists.${NC}\n"
+		else
+		    printf "${YELLOW}AppData Directory does not exist. Do you want to create it? (y/n): ${NC}"
+		    read create_dir
+		    if [ "$create_dir" = "y" ]; then
+			mkdir -p "$TARGET_DIR"
+			printf "${GREEN}Directory created.${NC}\n"
+		    else
+			printf "${RED}You exited the script. Configuration incorrect.${NC}\n"
+			exit 1
+		    fi
+		fi
+
+		# Check for the existence of the files
+		missing_files=0
+		for file in "${FILES[@]}"; do
+		    if [ ! -f "$TARGET_DIR/$file" ]; then
+			missing_files=1
+			break
+		    fi
+		done
+
+		if [ $missing_files -eq 1 ]; then
+		    # Check if backup directory exists
+		    if [ ! -d "$BACKUP_DIR" ]; then
+			mkdir "$BACKUP_DIR"
+			# Copy existing files to backup directory
+			for file in "${FILES[@]}"; do
+			    if [ -f "$TARGET_DIR/$file" ]; then
+				cp "$TARGET_DIR/$file" "$BACKUP_DIR/"
+			    fi
+			done
+		    fi
+
+		    printf "${YELLOW}The AppData files are not correctly placed. Do you want to copy them over to Fallout 4 installation directory? (y/n): ${NC}"
+		    read copy_files
+		    if [ "$copy_files" = "y" ]; then
+			files_exist=1
+			for file in "${FILES[@]}"; do
+			    if [ ! -f "$FALLOUT_DIR/$file" ]; then
+				files_exist=0
+				break
+			    fi
+			done
+
+			if [ $files_exist -eq 1 ]; then
+			    for file in "${FILES[@]}"; do
+				cp "$FALLOUT_DIR/$file" "$TARGET_DIR/"
+			    done
+			    printf "${GREEN}AppData files copied.${NC}\n"
+			else
+			    printf "${RED}AppData files not present in Fallout 4 installation directory.${NC}\n"
+			fi
+		    else
+			printf "${RED}You exited the script. Configuration incorrect.${NC}\n"
+			exit 1
+		    fi
+		else
+		    printf "${GREEN}All files are present in the AppData directory.${NC}\n"
+		fi
+
+
                 # Define the path to the Proton prefix
                 PROTONPREFIX="$HOME/Games/Heroic/Prefixes/default/Fallout London/pfx"
 
@@ -349,6 +420,7 @@ if [ "$fallout4defaultlauncher_downg" == "$fallout4defaultlauncher_downg_check" 
     launcher_file="$launcher_dir/Fallout4Launcher.exe"
     f4se_loader_file="$launcher_dir/f4se_loader.exe"
     launcher_old_file="$launcher_dir/Fallout4Launcher.exe.old"
+    custom_exit="N"
 
     # Check if Fallout4Launcher.exe and Fallout4Launcher.exe.old exist
     if [ -f "$launcher_file" ] && [ -f "$launcher_old_file" ]; then
@@ -361,7 +433,7 @@ if [ "$fallout4defaultlauncher_downg" == "$fallout4defaultlauncher_downg_check" 
     # Check if f4se_loader.exe and downgraded Fallout4Launcher.exe exist
     if [ -f "$f4se_loader_file" ] && [ "$fallout4defaultlauncher_downg_check" == "$fallout4defaultlauncher_downg" ]; then
         printf "${YELLOW}Both f4se_loader.exe and downgraded Fallout4Launcher.exe found. Do you want to rename the files to always run Fallout 4 using f4se_loader.exe? (y/n) ${NC}"
-        read -p "" user_input
+        read user_input
         if [ "$user_input" == "y" ] || [ "$user_input" == "Y" ]; then
             mv "$launcher_file" "$launcher_old_file"
             mv "$f4se_loader_file" "$launcher_file"
@@ -369,12 +441,18 @@ if [ "$fallout4defaultlauncher_downg" == "$fallout4defaultlauncher_downg_check" 
         else
             printf "${RED}Files were not renamed.${NC}\n"
         fi
+    else
+        printf "${RED}Fallout London is not installed or installation was not successful. Please ensure steps 9 and 10 from the instructions of Steam version of the game were completed successfully.${NC}"
+        custom_exit="Y"
     fi
-
+    
+    if [ "$custom_exit" == "Y" ]; then
     exit 1
+    fi
 else
     printf "${GREEN}Correct. Game does not launch with standard downgraded launcher${NC}\n"
-
+fi
+    	
     launcher_dir="$steam_f4_path"
     launcher_file="$launcher_dir/Fallout4Launcher.exe"
     launcher_check=$(sha256sum "$launcher_file" | awk '{print $1}')
@@ -387,7 +465,6 @@ else
         printf "${RED}f4se_loader.exe was not renamed to Fallout4Launcher.exe.${NC}\n"
         exit 1
     fi
-fi
     	
 
             # Define the given checksum
@@ -407,7 +484,25 @@ fi
                 
             else
                 printf "${RED}Fallout4.INI checksum does not match. Please make sure you put the file from: https://github.com/krupar101/f4london_steam_deck_ini/blob/main/Fallout4.INI inside '$file_path'.${NC}\n"
-                
+
+		fallout4_mygames_dir="$steam_f4_steamuser/Documents/My Games/Fallout4"
+
+		# Check if the directory exists
+		if [ -d "$fallout4_mygames_dir" ]; then
+		    printf "${GREEN}'My Games' Fallout 4 directory exists${NC}\n"
+		else
+		    # Prompt the user to create the directory
+		    printf "${YELLOW}\'My Games\' Fallout 4 directory does not exist. Do you want to create the missing directory $fallout4_mygames_dir? (y/n)${NC}\n"
+		    read response
+		    if [[ "$response" == "y" || "$response" == "Y" ]]; then
+			mkdir -p "$fallout4_mygames_dir"
+			printf "${GREEN}Directory $fallout4_mygames_dir created.${NC}\n"
+		    else
+			printf "${RED}Directory $fallout4_mygames_dir not created.${NC}\n"
+			exit 1
+		    fi
+		fi
+
                 
         printf "${YELLOW}Do you want to download the correct .INI file from GitHub automatically? (y/n) ${NC}\n"
         read -p "" user_input
@@ -415,7 +510,11 @@ fi
 		if [ "$user_input" == "y" ]; then
 		    # Define the download URL and destination path
 		    url="https://raw.githubusercontent.com/krupar101/f4london_steam_deck_ini/main/Fallout4.INI"
-		    destination="$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.INI"
+		    fallout4_mygames_dir="$steam_f4_steamuser/Documents/My Games/Fallout4"
+		    destination="$fallout4_mygames_dir/Fallout4.INI"
+		    
+		    
+		    
 		    
             if [ -e "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.INI" ]; then
                 rm "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.INI"
@@ -434,6 +533,7 @@ fi
 
 		    else
 			printf "${RED}Failed to download the file.${NC}\n"
+			exit 1
 		    fi
 		else
 		    echo "User exited the script"
