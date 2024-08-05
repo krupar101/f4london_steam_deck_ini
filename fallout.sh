@@ -486,6 +486,8 @@ if [ "$LAST_STEP" -lt 16 ]; then
                 echo "2. Drag and drop the downloaded zip file on this window"
                 echo "3. Click on this window and press enter."
                 echo ""
+                echo "If you don't have a keyboard connected you can press 'STEAM' + 'X' buttons to launch the software keyboard."
+                echo ""
                 echo "Drop the zip file here:"
 
                 # Read the full path of the dropped file
