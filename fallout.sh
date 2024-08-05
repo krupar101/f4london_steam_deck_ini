@@ -9,7 +9,12 @@ F4LONDON_INI_URL="https://raw.githubusercontent.com/krupar101/f4london_steam_dec
 PROGRESS_FILE="$HOME/.folon_patch_progress"
 
 # New / Changed
-FALLOUT_4_STEAMUSER_DIR="$HOME/.steam/steam/steamapps/compatdata/377160/pfx/drive_c/users/steamuser"
+STEAM_COMPAT_DATA_PATH="$HOME/.steam/steam/steamapps/compatdata/377160"
+WINEPREFIX="$STEAM_COMPAT_DATA_PATH/pfx"
+PROTON_DIR="$HOME/.steam/steam/steamapps/common/Proton - Experimental"
+GAME_EXE_PATH="$HOME/Games/Heroic/Fallout London/installer.exe"
+STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.steam/steam"
+FALLOUT_4_STEAMUSER_DIR="$WINEPREFIX/drive_c/users/steamuser"
 FALLOUT_LONDON_DIR="$HOME/Games/Heroic/Fallout London"
 
 
@@ -153,26 +158,42 @@ fi
 
 # Step 7: Move main game files
 if [ "$LAST_STEP" -lt 7 ]; then
-    echo "Step 9: Moving main game files..."
+    echo "Step 9: Manual Installation of Fallout London"
     if [ -d "$FALLOUT_LONDON_DIR" ]; then
-        rsync -av --remove-source-files "$FALLOUT_LONDON_DIR/" "$FALLOUT_4_DIR/"
-        
-        # Check if f4se_loader.exe exists in the destination directory
-        if [ ! -f "$FALLOUT_4_DIR/f4se_loader.exe" ]; then
-            echo "f4se_loader.exe not found in the destination. Retrying rsync..."
-            rsync -av --remove-source-files "$FALLOUT_LONDON_DIR/" "$FALLOUT_4_DIR/"
+    
+        # Export the variables
+        export STEAM_COMPAT_DATA_PATH
+        export WINEPREFIX
+
+        # Create the dosdevices directory if it doesn't exist
+        mkdir -p "$WINEPREFIX/dosdevices"
+
+        # Remove existing symlink if it exists
+        if [ -L "$WINEPREFIX/dosdevices/d:" ]; then
+            rm "$WINEPREFIX/dosdevices/d:"
         fi
 
-        # Check if there are any files left in the subfolders
-        if find "$FALLOUT_LONDON_DIR/" -mindepth 1 -type f | read; then
-            echo "Error: One or more files need to be moved manually."
-            echo "File(s) still present:"
-            find "$FALLOUT_LONDON_DIR/" -mindepth 1 -type f
-            zenity --info --title="Manual Intervention Required" --width="450" --text="Some files could not be moved. Please move the remaining files manually from '$FALLOUT_LONDON_DIR' to '$FALLOUT_4_DIR'.\n\nClick OK when you have finished moving the files to continue." 2>/dev/null
+        # Create the new symlink
+        ln -s "$FALLOUT_4_DIR" "$WINEPREFIX/dosdevices/d:"
+
+        zenity --info --title="Manual Installation" --width="450" --text="GoG installer for Fallout London will now launch.\nClick Install -> Select Drive D: -> Click Install\n\nClose the installer after it's done to continue the setup process.\n\nConfirm this window to start the process." 2>/dev/null
+
+        
+        # Verify the symlink
+        if [ -L "$WINEPREFIX/dosdevices/d:" ]; then
+            echo "Drive D: successfully created pointing to $FALLOUT_4_DIR"
+        else
+            echo "Failed to create Drive D:"
+            exit
         fi
-        update_progress 7
-    else
-        echo "Directory for main game files not found."
+
+
+	# Run the game using Proton with the specified Wine prefix and compatibility data path
+	STEAM_COMPAT_DATA_PATH="$STEAM_COMPAT_DATA_PATH" \
+	STEAM_COMPAT_CLIENT_INSTALL_PATH="$STEAM_COMPAT_CLIENT_INSTALL_PATH" \
+	WINEPREFIX="$WINEPREFIX" \
+	"$PROTON_DIR/proton" run "$GAME_EXE_PATH"
+
         update_progress 7
     fi
 fi
