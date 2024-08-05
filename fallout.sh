@@ -146,13 +146,13 @@ fi
 # Step 6: Check for Fallout: London installation
 if [ "$LAST_STEP" -lt 6 ]; then
     if [ ! -d "$FALLOUT_LONDON_DIR" ]; then
-      text="<b>Please install Fallout London from Heroic Launcher</b>\n\n1. Go to 'Manage Accounts' in the left Heroic Launcher pane.\n2. Login to GoG\n3. Go to your library and download Fallout London.\n\nOnce Fallout London is Downloaded - Close Heroic Launcher to continue.\n\nPress 'OK' to start Heroic Launcher and close this message."
+      text="<b>Please install Fallout London from Heroic Launcher</b>\n\n1. Go to 'Manage Accounts' in the left Heroic Launcher pane.\n2. Login to GoG\n3. Go to your library and install Fallout London.\n\nOnce Fallout London is installed - Close Heroic Launcher to continue.\n\nPress 'OK' to start Heroic Launcher and close this message."
       zenity --info \
              --title="Overkill" \
              --width="450" \
              --text="$text" 2>/dev/null
       echo ""
-      printf "Please install Fallout London from Heroic Launcher\n\n1. Go to 'Manage Accounts' in the left Heroic Launcher pane.\n2. Login to GoG\n3. Go to your library and download Fallout London.\n\nOnce Fallout London is Downloaded - Close Heroic Launcher to continue.\n"
+      printf "Please install Fallout London from Heroic Launcher\n\n1. Go to 'Manage Accounts' in the left Heroic Launcher pane.\n2. Login to GoG\n3. Go to your library and install Fallout London.\n\nOnce Fallout London is installed - Close Heroic Launcher to continue.\n"
       echo "" 
       flatpak run com.heroicgameslauncher.hgl > /dev/null 2>&1
     fi
@@ -190,7 +190,7 @@ if [ "$LAST_STEP" -lt 7 ]; then
             exit
         fi
 
-	printf "GoG installer for Fallout London will now launch.\n\n1. Click Install\n2. Select Drive D:\n3. Click Install Here\n\nClose the installer after it's done to continue the setup process."
+	printf "\n\nGoG installer for Fallout London will now launch.\n\n1. Click Install\n2. Select Drive D:\n3. Click Install Here\n\nClose the installer after it's done to continue the setup process.\n\n"
 	
 	# Run the game using Proton with the specified Wine prefix and compatibility data path
 	STEAM_COMPAT_DATA_PATH="$STEAM_COMPAT_DATA_PATH" \
@@ -476,11 +476,7 @@ if [ "$LAST_STEP" -lt 16 ]; then
         else
             echo "'Buffout Mod' is not installed. If it's not installed you may experience crashes during the gameplay of Fallout London."
 
-                buffout_text="<b>'Buffout 4' mod needs to be installed. \nAs soon as you Accept this message the Nexus page with 'Buffout 4' mod will be opened.\nAfter downloading switch your focus to the Konsole window.\nDrag and drop the downloaded .zip file with the mod onto the konsole window.\n Press enter"
-                zenity --info \
-                        --title="Manual Intervention Required" \
-                        --width="450" \
-                        --text="$buffout_text" 2>/dev/null
+        zenity --info --title="Manual Installation" --width="450" --text="<b>'Buffout 4' mod needs to be installed.</b> \nAs soon as you Accept this message the Nexus page with 'Buffout 4' mod will be opened.\n\n1. Download the mod from nexus.\n2. After downloading switch your focus to the Konsole window.\n3. Drag and drop the downloaded .zip file with the mod onto the konsole window.\n4. Press enter." 2>/dev/null
                 
                 xdg-open "https://www.nexusmods.com/fallout4/mods/47359?tab=files" > /dev/null 2>&1 &
                 
