@@ -196,7 +196,7 @@ if [ "$LAST_STEP" -lt 7 ]; then
 	STEAM_COMPAT_DATA_PATH="$STEAM_COMPAT_DATA_PATH" \
 	STEAM_COMPAT_CLIENT_INSTALL_PATH="$STEAM_COMPAT_CLIENT_INSTALL_PATH" \
 	WINEPREFIX="$WINEPREFIX" \
-	"$PROTON_DIR/proton" run "$GAME_EXE_PATH" > /dev/null 2>&1 &
+	"$PROTON_DIR/proton" run "$GAME_EXE_PATH"
 
         update_progress 7
     fi
