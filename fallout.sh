@@ -146,12 +146,15 @@ fi
 # Step 6: Check for Fallout: London installation
 if [ "$LAST_STEP" -lt 6 ]; then
     if [ ! -d "$FALLOUT_LONDON_DIR" ]; then
-      flatpak run com.heroicgameslauncher.hgl
-      text="<b>Please install Fallout London from Heroic Launcher</b>\n\nThen click OK to continue. (Heroic Launcher should be opened automatically)"
+      text="<b>Please install Fallout London from Heroic Launcher</b>\n\n1. Go to 'Manage Accounts' in the left Heroic Launcher pane.\n2. Login to GoG\n3. Go to your library and download Fallout London.\n\nOnce Fallout London is Downloaded - Close Heroic Launcher to continue.\n\nPress 'OK' to start Heroic Launcher and close this message."
       zenity --info \
              --title="Overkill" \
              --width="450" \
              --text="$text" 2>/dev/null
+      echo ""
+      printf "Please install Fallout London from Heroic Launcher\n\n1. Go to 'Manage Accounts' in the left Heroic Launcher pane.\n2. Login to GoG\n3. Go to your library and download Fallout London.\n\nOnce Fallout London is Downloaded - Close Heroic Launcher to continue.\n"
+      echo "" 
+      flatpak run com.heroicgameslauncher.hgl > /dev/null 2>&1
     fi
     update_progress 6
 fi
@@ -176,7 +179,7 @@ if [ "$LAST_STEP" -lt 7 ]; then
         # Create the new symlink
         ln -s "$FALLOUT_4_DIR" "$WINEPREFIX/dosdevices/d:"
 
-        zenity --info --title="Manual Installation" --width="450" --text="GoG installer for Fallout London will now launch.\nClick Install -> Select Drive D: -> Click Install\n\nClose the installer after it's done to continue the setup process.\n\nConfirm this window to start the process." 2>/dev/null
+        zenity --info --title="Manual Installation" --width="450" --text="GoG installer for Fallout London will now launch.\n1. Click Install\n2. Select Drive D:\n3. Click Install Here\n\nClose the installer after it's done to continue the setup process.\n\nClick 'OK' in this window to start the process." 2>/dev/null
 
         
         # Verify the symlink
@@ -187,7 +190,8 @@ if [ "$LAST_STEP" -lt 7 ]; then
             exit
         fi
 
-
+	printf "GoG installer for Fallout London will now launch.\n\n1. Click Install\n2. Select Drive D:\n3. Click Install Here\n\nClose the installer after it's done to continue the setup process."
+	
 	# Run the game using Proton with the specified Wine prefix and compatibility data path
 	STEAM_COMPAT_DATA_PATH="$STEAM_COMPAT_DATA_PATH" \
 	STEAM_COMPAT_CLIENT_INSTALL_PATH="$STEAM_COMPAT_CLIENT_INSTALL_PATH" \
@@ -486,7 +490,7 @@ if [ "$LAST_STEP" -lt 16 ]; then
                 echo "2. Drag and drop the downloaded zip file on this window"
                 echo "3. Click on this window and press enter."
                 echo ""
-
+                echo "Drop the zip file here:"
 
                 # Read the full path of the dropped file
                 read -r dropped_file
