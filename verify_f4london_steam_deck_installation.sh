@@ -8,23 +8,6 @@ steam_f4_steamuser="$HOME/.steam/steam/steamapps/compatdata/377160/pfx/drive_c/u
 fallout_london_installer="$HOME/Games/Heroic/Fallout London"
 HEROIC_CONFIG_FILE="$HOME/.var/app/com.heroicgameslauncher.hgl/config/heroic/gog_store/installed.json"
 
-# Check where Steam Version of Fallout 4 is installed.
-if [ -e "$SSD_F4_LAUNCHER_FILE" ]; then
-    echo "Fallout 4 recognized to be installed on Internal SSD"
-
-	STEAM_APPMANIFEST_PATH="$HOME/.local/share/Steam/steamapps/appmanifest_377160.acf"
-	steam_f4_path="$HOME/.steam/steam/steamapps/common/Fallout 4"
-
-elif [ -e "$SD_CARD_F4_LAUNCHER_FILE" ]; then
-    echo "Fallout 4 recognized to be installed on SD Card"
-
-        STEAM_APPMANIFEST_PATH="/run/media/mmcblk0p1/steamapps/appmanifest_377160.acf"
-        steam_f4_path="/run/media/mmcblk0p1/steamapps/common/Fallout 4"
-
-else
-    echo "ERROR: Steam version of Fallout 4 is not installed on this device."
-fi
-
 # Define colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -440,6 +423,23 @@ if [ "$platform" == "g" ]; then
 
 elif [ "$platform" == "s" ]; then
     printf "${GREEN}Steam Selected${NC}\n"
+
+# Check where Steam Version of Fallout 4 is installed.
+if [ -e "$SSD_F4_LAUNCHER_FILE" ]; then
+    echo "Fallout 4 recognized to be installed on Internal SSD"
+
+	STEAM_APPMANIFEST_PATH="$HOME/.local/share/Steam/steamapps/appmanifest_377160.acf"
+	steam_f4_path="$HOME/.steam/steam/steamapps/common/Fallout 4"
+
+elif [ -e "$SD_CARD_F4_LAUNCHER_FILE" ]; then
+    echo "Fallout 4 recognized to be installed on SD Card"
+
+        STEAM_APPMANIFEST_PATH="/run/media/mmcblk0p1/steamapps/appmanifest_377160.acf"
+        steam_f4_path="/run/media/mmcblk0p1/steamapps/common/Fallout 4"
+
+else
+    echo "ERROR: Steam version of Fallout 4 is not installed on this device."
+fi
     
     	fallout4defaultlauncher="75065f52666b9a2f3a76d9e85a66c182394bfbaa8e85e407b1a936adec3654cc"
     	fallout4defaultlauncher_check=$(sha256sum "$steam_f4_path/Fallout4Launcher.exe" | awk '{print $1}')
