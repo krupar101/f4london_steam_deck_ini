@@ -6,6 +6,24 @@ heroic_f4london_steamuser="$HOME/Games/Heroic/Prefixes/default/Fallout London/pf
 steam_f4_path="$HOME/.steam/steam/steamapps/common/Fallout 4"
 steam_f4_steamuser="$HOME/.steam/steam/steamapps/compatdata/377160/pfx/drive_c/users/steamuser"
 fallout_london_installer="$HOME/Games/Heroic/Fallout London"
+HEROIC_CONFIG_FILE="$HOME/.var/app/com.heroicgameslauncher.hgl/config/heroic/gog_store/installed.json"
+
+# Check where Steam Version of Fallout 4 is installed.
+if [ -e "$SSD_F4_LAUNCHER_FILE" ]; then
+    echo "Fallout 4 recognized to be installed on Internal SSD"
+
+	STEAM_APPMANIFEST_PATH="$HOME/.local/share/Steam/steamapps/appmanifest_377160.acf"
+	steam_f4_path="$HOME/.steam/steam/steamapps/common/Fallout 4"
+
+elif [ -e "$SD_CARD_F4_LAUNCHER_FILE" ]; then
+    echo "Fallout 4 recognized to be installed on SD Card"
+
+        STEAM_APPMANIFEST_PATH="/run/media/mmcblk0p1/steamapps/appmanifest_377160.acf"
+        steam_f4_path="/run/media/mmcblk0p1/steamapps/common/Fallout 4"
+
+else
+    echo "ERROR: Steam version of Fallout 4 is not installed on this device."
+fi
 
 # Define colors
 RED='\033[0;31m'
@@ -13,6 +31,29 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+# Define paths to find installation directory.
+F4_LAUNCHER_NAME="Fallout4Launcher.exe"
+SSD_F4_LAUNCHER_FILE="$HOME/.steam/steam/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
+SD_CARD_F4_LAUNCHER_FILE="/run/media/mmcblk0p1/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
+
+find_f4london_install_path() {
+# Check if the file exists
+if [[ ! -f "$HEROIC_CONFIG_FILE" ]]; then
+    echo "Fallout London not recognized to be installed in Heroic Launcher."
+fi
+
+# Search for the install_path for the game "Fallout London"
+install_path=$(jq -r '.installed[] | select(.install_path | contains("Fallout London")) | .install_path' "$HEROIC_CONFIG_FILE")
+
+# Check if the install_path was found
+if [[ -n "$install_path" ]]; then
+    echo "Fallout London installation path found."
+    fallout_london_installer="$install_path"
+else
+    echo "Fallout London not recognized to be installed in Heroic Launcher."
+    fallout_london_installer="$HOME/Games/Heroic/Fallout London"
+fi
+}
 
 echo ""
 echo "This script is directly related to Fallout London Steam Deck installation instructions published in this reddit thread: https://www.reddit.com/r/fallout4london/comments/1ebrc74/steam_deck_instructions/"
@@ -22,6 +63,8 @@ echo ""
 # Prompt the user for the game version
 printf "${YELLOW}Fallout London installation verification script for Steam Deck.\nWhich version of the instructions did you follow? ('g' for GoG / 's' for Steam)${NC}\n"
 read platform
+
+find_f4london_install_path
 
 # Initialize prerequisites flag
 all_prerequisites_met=false
@@ -814,7 +857,7 @@ fi
 
 
 
-FILE="$HOME/.steam/steam/steamapps/appmanifest_377160.acf"
+FILE="$STEAM_APPMANIFEST_PATH"
 
 display_f4update_escape_message() {
 printf "${RED}You decided not to disable automatic updates for Fallout 4. The game may still be automatically updated through Steam which can break the Fallout London installation.${NC}\n"
