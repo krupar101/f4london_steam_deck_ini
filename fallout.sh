@@ -11,7 +11,7 @@ HEROIC_CONFIG_FILE="$HOME/.var/app/com.heroicgameslauncher.hgl/config/heroic/gog
 STEAM_COMPAT_DATA_PATH="$HOME/.steam/steam/steamapps/compatdata/377160"
 WINEPREFIX="$STEAM_COMPAT_DATA_PATH/pfx"
 FALLOUT_4_STEAMUSER_DIR="$WINEPREFIX/drive_c/users/steamuser"
-	
+
 # Define paths to find installation directory.
 F4_LAUNCHER_NAME="Fallout4Launcher.exe"
 SSD_F4_LAUNCHER_FILE="$HOME/.steam/steam/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
@@ -23,7 +23,6 @@ if [ -e "$SSD_F4_LAUNCHER_FILE" ]; then
 
         STEAM_APPMANIFEST_PATH="$HOME/.local/share/Steam/steamapps/appmanifest_377160.acf"
         FALLOUT_4_DIR="$HOME/.steam/steam/steamapps/common/Fallout 4"
-
 
 elif [ -e "$SD_CARD_F4_LAUNCHER_FILE" ]; then
     echo "Fallout 4 recognized to be installed on SD Card"
@@ -104,12 +103,12 @@ if [ "$LAST_STEP" -lt 2 ]; then
     echo "Setting up downgrade-list..."
     cat <<EOL > "$DOWNGRADE_LIST_PATH"
 download_depot 377160 377161 7497069378349273908
-download_depot 377160 377163 5819088023757897745
 download_depot 377160 377162 5847529232406005096
+download_depot 377160 377163 5819088023757897745
 download_depot 377160 377164 2178106366609958945
+download_depot 377160 435880 1255562923187931216
 download_depot 377160 435870 1691678129192680960
 download_depot 377160 435871 5106118861901111234
-download_depot 377160 435880 1255562923187931216
 download_depot 377160 435881 1207717296920736193
 download_depot 377160 435882 8482181819175811242
 download_depot 480630 5527412439359349504
@@ -140,8 +139,27 @@ if [ "$LAST_STEP" -lt 4 ]; then
     echo "Please enter your Steam login credentials."
     echo "Note: Your login details are secure and will NOT be stored."
 
-    username=$(zenity --entry --title="Steam Username" --text="Enter name of your Steam user:")
-    password=$(zenity --password --title="Steam Password" --text="Enter your Steam user password to install required dependencies" 2>/dev/null)
+	# Loop until a non-empty username is entered
+	while true; do
+	    username=$(zenity --entry --title="Steam Username" --text="Enter name of your Steam user:")
+
+	    if [ -n "$username" ]; then
+		break
+	    else
+		zenity --error --title="Input Error" --text="Username cannot be empty. Please enter your Steam username."
+	    fi
+	done
+
+	# Loop until a non-empty password is entered
+	while true; do
+	    password=$(zenity --password --title="Steam Password" --text="Enter your Steam user password to install required dependencies" 2>/dev/null)
+
+	    if [ -n "$password" ]; then
+		break
+	    else
+		zenity --error --title="Input Error" --text="Password cannot be empty. Please enter your Steam user password."
+	    fi
+	done
 
     # Run SteamCMD with the provided credentials and script
     echo "Running SteamCMD with provided credentials..."
