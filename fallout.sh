@@ -401,6 +401,7 @@ if [ "$LAST_STEP" -lt 7 ]; then
 	# Remove any existing symlink or directory
 	if [ -e "$WINEPREFIX/dosdevices/d:" ]; then
 	    rm -f "$WINEPREFIX/dosdevices/d:"
+	    rm -f "$WINEPREFIX/dosdevices/d::"
 	fi
  
 	# Create the symbolic link
