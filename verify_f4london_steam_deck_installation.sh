@@ -6,7 +6,6 @@ heroic_f4london_steamuser="$HOME/Games/Heroic/Prefixes/default/Fallout London/pf
 steam_f4_path="$HOME/.steam/steam/steamapps/common/Fallout 4"
 steam_f4_steamuser="$HOME/.steam/steam/steamapps/compatdata/377160/pfx/drive_c/users/steamuser"
 fallout_london_installer="$HOME/Games/Heroic/Fallout London"
-HEROIC_CONFIG_FILE="$HOME/.var/app/com.heroicgameslauncher.hgl/config/heroic/gog_store/installed.json"
 
 # Define colors
 RED='\033[0;31m'
@@ -14,29 +13,6 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Define paths to find installation directory.
-F4_LAUNCHER_NAME="Fallout4Launcher.exe"
-SSD_F4_LAUNCHER_FILE="$HOME/.steam/steam/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
-SD_CARD_F4_LAUNCHER_FILE="/run/media/mmcblk0p1/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
-
-find_f4london_install_path() {
-# Check if the file exists
-if [[ ! -f "$HEROIC_CONFIG_FILE" ]]; then
-    echo "Fallout London not recognized to be installed in Heroic Launcher."
-fi
-
-# Search for the install_path for the game "Fallout London"
-install_path=$(jq -r '.installed[] | select(.install_path | contains("Fallout London")) | .install_path' "$HEROIC_CONFIG_FILE")
-
-# Check if the install_path was found
-if [[ -n "$install_path" ]]; then
-    echo "Fallout London installation path found."
-    fallout_london_installer="$install_path"
-else
-    echo "Fallout London not recognized to be installed in Heroic Launcher."
-    fallout_london_installer="$HOME/Games/Heroic/Fallout London"
-fi
-}
 
 echo ""
 echo "This script is directly related to Fallout London Steam Deck installation instructions published in this reddit thread: https://www.reddit.com/r/fallout4london/comments/1ebrc74/steam_deck_instructions/"
@@ -46,8 +22,6 @@ echo ""
 # Prompt the user for the game version
 printf "${YELLOW}Fallout London installation verification script for Steam Deck.\nWhich version of the instructions did you follow? ('g' for GoG / 's' for Steam)${NC}\n"
 read platform
-
-find_f4london_install_path
 
 # Initialize prerequisites flag
 all_prerequisites_met=false
@@ -175,12 +149,12 @@ if [ "$platform" == "g" ]; then
 		    printf "${YELLOW}The AppData files are not correctly placed. Do you want to copy them over to Fallout 4 installation directory? (y/n): ${NC}"
 		    read copy_files
 		    if [ "$copy_files" = "y" ]; then
-			files_exist=1
-			for file in "${FILES[@]}"; do
-			    if [ ! -f "$FALLOUT_DIR/$file" ]; then
-				files_exist=0
-				break
-			    fi
+				files_exist=1
+				for file in "${FILES[@]}"; do
+					if [ ! -f "$FALLOUT_DIR/$file" ]; then
+					files_exist=0
+					break
+					fi
 			done
 
 			if [ $files_exist -eq 1 ]; then
@@ -423,23 +397,6 @@ if [ "$platform" == "g" ]; then
 
 elif [ "$platform" == "s" ]; then
     printf "${GREEN}Steam Selected${NC}\n"
-
-# Check where Steam Version of Fallout 4 is installed.
-if [ -e "$SSD_F4_LAUNCHER_FILE" ]; then
-    echo "Fallout 4 recognized to be installed on Internal SSD"
-
-	STEAM_APPMANIFEST_PATH="$HOME/.local/share/Steam/steamapps/appmanifest_377160.acf"
-	steam_f4_path="$HOME/.steam/steam/steamapps/common/Fallout 4"
-
-elif [ -e "$SD_CARD_F4_LAUNCHER_FILE" ]; then
-    echo "Fallout 4 recognized to be installed on SD Card"
-
-        STEAM_APPMANIFEST_PATH="/run/media/mmcblk0p1/steamapps/appmanifest_377160.acf"
-        steam_f4_path="/run/media/mmcblk0p1/steamapps/common/Fallout 4"
-
-else
-    echo "ERROR: Steam version of Fallout 4 is not installed on this device."
-fi
     
     	fallout4defaultlauncher="75065f52666b9a2f3a76d9e85a66c182394bfbaa8e85e407b1a936adec3654cc"
     	fallout4defaultlauncher_check=$(sha256sum "$steam_f4_path/Fallout4Launcher.exe" | awk '{print $1}')
@@ -516,8 +473,6 @@ fi
             # Define the file path
             file_path="$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.INI"
 
-
-
             # Compute the SHA-256 checksum of the file
             computed_checksum=$(sha256sum "$file_path" | awk '{ print $1 }')
 
@@ -528,61 +483,60 @@ fi
             else
                 printf "${RED}Fallout4.INI checksum does not match. Please make sure you put the file from: https://github.com/krupar101/f4london_steam_deck_ini/blob/main/Fallout4.INI inside '$file_path'.${NC}\n"
 
-		fallout4_mygames_dir="$steam_f4_steamuser/Documents/My Games/Fallout4"
+				fallout4_mygames_dir="$steam_f4_steamuser/Documents/My Games/Fallout4"
 
-		# Check if the directory exists
-		if [ -d "$fallout4_mygames_dir" ]; then
-		    printf "${GREEN}'My Games' Fallout 4 directory exists${NC}\n"
-		else
-		    # Prompt the user to create the directory
-		    printf "${YELLOW}\'My Games\' Fallout 4 directory does not exist. Do you want to create the missing directory $fallout4_mygames_dir? (y/n)${NC}\n"
-		    read response
-		    if [[ "$response" == "y" || "$response" == "Y" ]]; then
-			mkdir -p "$fallout4_mygames_dir"
-			printf "${GREEN}Directory $fallout4_mygames_dir created.${NC}\n"
-		    else
-			printf "${RED}Directory $fallout4_mygames_dir not created.${NC}\n"
-			exit 1
-		    fi
-		fi
+				# Check if the directory exists
+				if [ -d "$fallout4_mygames_dir" ]; then
+					printf "${GREEN}'My Games' Fallout 4 directory exists${NC}\n"
+				else
+					# Prompt the user to create the directory
+					printf "${YELLOW}\'My Games\' Fallout 4 directory does not exist. Do you want to create the missing directory $fallout4_mygames_dir? (y/n)${NC}\n"
+					read response
+					if [[ "$response" == "y" || "$response" == "Y" ]]; then
+					mkdir -p "$fallout4_mygames_dir"
+					printf "${GREEN}Directory $fallout4_mygames_dir created.${NC}\n"
+					else
+					printf "${RED}Directory $fallout4_mygames_dir not created.${NC}\n"
+					exit 1
+					fi
+				fi
 
                 
-        printf "${YELLOW}Do you want to download the correct .INI file from GitHub automatically? (y/n) ${NC}\n"
-        read -p "" user_input
+				printf "${YELLOW}Do you want to download the correct .INI file from GitHub automatically? (y/n) ${NC}\n"
+				read -p "" user_input
 
-		if [ "$user_input" == "y" ]; then
-		    # Define the download URL and destination path
-		    url="https://raw.githubusercontent.com/krupar101/f4london_steam_deck_ini/main/Fallout4.INI"
-		    fallout4_mygames_dir="$steam_f4_steamuser/Documents/My Games/Fallout4"
-		    destination="$fallout4_mygames_dir/Fallout4.INI"
+				if [ "$user_input" == "y" ]; then
+					# Define the download URL and destination path
+					url="https://raw.githubusercontent.com/krupar101/f4london_steam_deck_ini/main/Fallout4.INI"
+					fallout4_mygames_dir="$steam_f4_steamuser/Documents/My Games/Fallout4"
+					destination="$fallout4_mygames_dir/Fallout4.INI"
 		    
 		    
 		    
 		    
-            if [ -e "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.INI" ]; then
-                rm "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.INI"
-            fi
+					if [ -e "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.INI" ]; then
+						rm "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.INI"
+					fi
 
-            if [ -e "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.ini" ]; then
-                rm "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.ini"
-            fi
+					if [ -e "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.ini" ]; then
+						rm "$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.ini"
+					fi
 
-		    # Download the file using wget
-		    wget -O "$destination" "$url"
-		    
-		    # Check if the download was successful
-		    if [ $? -eq 0 ]; then
-                printf "${GREEN}File downloaded successfully to $destination${NC}\n"
+						# Download the file using wget
+						wget -O "$destination" "$url"
+						
+						# Check if the download was successful
+						if [ $? -eq 0 ]; then
+							printf "${GREEN}File downloaded successfully to $destination${NC}\n"
 
-		    else
-			printf "${RED}Failed to download the file.${NC}\n"
-			exit 1
-		    fi
-		else
-		    echo "User exited the script"
-		    exit 1
-		fi
-
+						else
+						printf "${RED}Failed to download the file.${NC}\n"
+						exit 1
+						fi
+				else
+					echo "User exited the script"
+					exit 1
+				fi
             fi
 
 		# Define the directories and files
@@ -857,7 +811,7 @@ fi
 
 
 
-FILE="$STEAM_APPMANIFEST_PATH"
+FILE="$HOME/.steam/steam/steamapps/appmanifest_377160.acf"
 
 display_f4update_escape_message() {
 printf "${RED}You decided not to disable automatic updates for Fallout 4. The game may still be automatically updated through Steam which can break the Fallout London installation.${NC}\n"
