@@ -11,7 +11,6 @@ WINEPREFIX="$STEAM_COMPAT_DATA_PATH/pfx"
 FALLOUT_4_STEAMUSER_DIR="$WINEPREFIX/drive_c/users/steamuser"
 PROTON_DIR_SSD="$HOME/.steam/steam/steamapps/common/Proton - Experimental"
 PROTON_DIR_SD="/run/media/mmcblk0p1/steamapps/common/Proton - Experimental"
-USER_CHOICE_UPDATE="false"
 
 # Define paths to find installation directory.
 F4_LAUNCHER_NAME="Fallout4Launcher.exe"
@@ -418,13 +417,13 @@ fi
 if [ "$LAST_STEP" -lt 6 ]; then
     find_f4london_install_path
     if [ ! -d "$FALLOUT_LONDON_DIR" ]; then
-      text="<b>Please install Fallout London from Heroic Launcher</b>\n\n1. Go to 'Log in' in the left Heroic Launcher pane.\n2. Login to GoG\n3. Go to your library and install Fallout London.\n\nOnce Fallout London is installed - Close Heroic Launcher to continue.\n\nPress 'OK' to start Heroic Launcher and close this message."
+      text="<b>Please install Fallout London from Heroic Launcher</b>\n\n1. Go to 'Log in' in the left Heroic Launcher pane.\n2. Login to GoG\n3. Go to your library and install Fallout London.\n4. Once Fallout London is installed - Close Heroic Launcher to continue.\n\nPress 'OK' to start Heroic Launcher and close this message."
       zenity --info \
              --title="Overkill" \
              --width="450" \
              --text="$text" 2>/dev/null
       echo ""
-      printf "Please install Fallout London from Heroic Launcher\n\n1. Go to 'Log in' in the left Heroic Launcher pane.\n2. Login to GoG\n3. Go to your library and install Fallout London.\n\nOnce Fallout London is installed - Close Heroic Launcher to continue.\n"
+      printf "Please install Fallout London from Heroic Launcher\n\n1. Go to 'Log in' in the left Heroic Launcher pane.\n2. Login to GoG\n3. Go to your library and install Fallout London.\n4. Once Fallout London is installed - Close Heroic Launcher to continue.\n"
       echo "" 
       flatpak run com.heroicgameslauncher.hgl > /dev/null 2>&1
     fi
@@ -438,7 +437,7 @@ if [ "$LAST_STEP" -lt 7 ]; then
     find_f4london_install_path
     if [ -d "$FALLOUT_LONDON_DIR" ]; then
 
-        zenity --info --title="Manual Installation" --width="450" --text="GoG installer for Fallout London will now launch.\n\n1. Click Install\n2. Select Drive F:\n3. Click Install Here\n4. Close the installer after it's done to continue the setup process.\n\nMake sure to disconnect all external drives other than Internal SSD and microSD card before you proceed.\n\nClick 'OK' in this window to start the process." 2>/dev/null
+        zenity --info --title="Manual Installation" --width="450" --text="GoG installer for Fallout London will now launch.\n\n1. Click 'Install' or 'Update' if you have both options\n2. Select Drive F:\n3. Click Install Here\n4. Close the installer after it's done to continue the setup process.\n\nMake sure to disconnect all external drives other than Internal SSD and microSD card before you proceed.\n\nClick 'OK' in this window to start the process." 2>/dev/null
 	printf "\n\nGoG installer for Fallout London will now launch.\n\n1. Click Install\n2. Select Drive F:\n3. Click Install Here\n4. Close the installer after it's done to continue the setup process.\n\nMake sure to disconnect all external drives other than Internal SSD and microSD card before you proceed."
 
         # Export the variables
