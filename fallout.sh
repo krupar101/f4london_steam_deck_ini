@@ -110,6 +110,7 @@ cleanup() {
     pkill -f zenity
     exit 1
 }
+trap cleanup SIGINT SIGTERM
 
 
 ask_user_if_he_wants_to_update() {
@@ -135,8 +136,6 @@ ask_user_if_he_wants_to_update() {
 			fi
 		fi
 }
-
-trap cleanup SIGINT SIGTERM
 
 # Function to update progress
 update_progress() {
