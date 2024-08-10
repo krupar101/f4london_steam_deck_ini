@@ -464,11 +464,14 @@ if [ "$LAST_STEP" -lt 7 ]; then
             exit
         fi
 	
-	# Run the game using Proton with the specified Wine prefix and compatibility data path
+	    # Run the game using Proton with the specified Wine prefix and compatibility data path
         killall wineserver
         "$PROTON_DIR/proton" run "$GAME_EXE_PATH"
 
         update_progress 7
+    else
+    echo "Fallout London is not recognized to be installed in Heroic Launcher.\nStart the Installation process from the beginning or install Heroic Launcher and Fallout London manually."
+    exit
     fi
 fi
 
