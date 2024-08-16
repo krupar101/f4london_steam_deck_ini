@@ -1133,6 +1133,7 @@ fi
 
 
 if [ "$LAST_STEP" -lt 19 ]; then
+        find_f4_heroic_prefix_location
         WINETRICKS_DIR="$HOME/Downloads/winetricks"
 
         # Function to install Wine via Flatpak
