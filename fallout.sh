@@ -1179,9 +1179,9 @@ if [ "$LAST_STEP" -lt 19 ]; then
 
                 # Add local bin directory to PATH
                 export PATH="$WINETRICKS_DIR:$PATH"
-                export WINEPREFIX=$WINEPREFIX
+                export WINEPREFIX="$WINEPREFIX"
                 # Step 3: Install FAudio using winetricks
-                echo "Installing FAudio with winetricks... v11"
+                echo "Installing FAudio with winetricks... v12"
 
                 # alias wine="flatpak run org.winehq.Wine"
                 # alias winetricks="flatpak run --command="$WINETRICKS_DIR/winetricks" org.winehq.Wine"
