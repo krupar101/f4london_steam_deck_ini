@@ -1185,6 +1185,8 @@ if [ "$LAST_STEP" -lt 19 ]; then
                 # Step 3: Install FAudio using winetricks with flatpak Wine
                 echo "Installing FAudio with winetricks using flatpak Wine..."
                 flatpak update -y org.winehq.Wine
+                flatpak run --command=winetricks org.winehq.Wine -q remove_faudio
+                flatpak run --command=winetricks org.winehq.Wine uninstall faudio
                 flatpak run --command=winetricks org.winehq.Wine -q faudio
 
                 # Verify if FAudio.dll was installed
