@@ -1,5 +1,6 @@
 #!/bin/bash
-
+echo ""
+echo ""
 echo "Fallout London installation script for Steam Deck by krupar"
 sleep 1
 echo "Published by Overkill.wtf"
@@ -1155,10 +1156,9 @@ if [ "$LAST_STEP" -lt 19 ]; then
         # Step 1: Check if the F4_VERSION variable is set to "GOG"
         if [ "$F4_VERSION" = "GOG" ]; then
             # Define the path to the Proton prefix
-            PROTONPREFIX="$WINEPREFIX"
 
             # Define the path to the FAudio.dll file
-            FAudio_FILE="$PROTONPREFIX/drive_c/windows/system32/FAudio.dll"
+            FAudio_FILE="$WINEPREFIX/drive_c/windows/system32/FAudio.dll"
 
             # Check if wine is installed
             if ! flatpak list | grep -q org.winehq.Wine; then
@@ -1179,12 +1179,19 @@ if [ "$LAST_STEP" -lt 19 ]; then
 
                 # Add local bin directory to PATH
                 export PATH="$WINETRICKS_DIR:$PATH"
-
+                export WINEPREFIX=$WINEPREFIX
                 # Step 3: Install FAudio using winetricks
                 echo "Installing FAudio with winetricks... v10"
-                flatpak run org.winehq.Wine --command "$WINETRICKS_DIR/winetricks" faudio
 
-                # winetricks -q faudio
+                # alias wine="flatpak run org.winehq.Wine"
+                # alias winetricks="flatpak run --command="$WINETRICKS_DIR/winetricks" org.winehq.Wine"
+
+                flatpak run --env="WINEPREFIX=$WINEPREFIX" --env="WINEARCH=win32" org.winehq.Wine "$WINETRICKS_DIR/winetricks" faudio
+
+
+                # flatpak run org.winehq.Wine --command "$WINETRICKS_DIR/winetricks" faudio
+
+                winetricks -q faudio
 
                 # Verify if FAudio.dll was installed
                 if [ -f "$FAudio_FILE" ]; then
