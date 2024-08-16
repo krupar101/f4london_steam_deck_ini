@@ -1184,7 +1184,7 @@ if [ "$LAST_STEP" -lt 19 ]; then
                 # Step 3: Install FAudio using winetricks
                 echo "Installing FAudio with winetricks... v13"
 
-                WINEPREFIX="$HOME/Games/Heroic/Prefixes/default/Fallout 4 Game of the Year Edition/pfx" $HOME/Downloads/winetricks/winetricks faudio
+                WINEPREFIX="$WINEPREFIX" $HOME/Downloads/winetricks/winetricks faudio
 
                 # alias wine="flatpak run org.winehq.Wine"
                 # alias winetricks="flatpak run --command="$WINETRICKS_DIR/winetricks" org.winehq.Wine"
