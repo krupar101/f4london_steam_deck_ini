@@ -1170,15 +1170,17 @@ if [ "$LAST_STEP" -lt 19 ]; then
 
                 echo "$WINEPREFIX"
                 # Step 3: Install FAudio using winetricks
-                echo "Installing FAudio v15"
+                echo "Installing FAudio v16"
 
                 mkdir -p $HOME/Downloads/faudio
                 wget -P "$HOME/Downloads/faudio" https://github.com/Kron4ek/FAudio-Builds/releases/download/20.07/faudio-20.07.tar.xz
-                tar xvf "$HOME/Downloads/faudio/faudio-20.07.tar.xz"
                 tar xvf "$HOME/Downloads/faudio/faudio-20.07.tar.xz" -C "$HOME/Downloads/faudio"
                 chmod +x "$HOME/Downloads/faudio/faudio-20.07"
-                WINEPREFIX="$WINEPREFIX" ./"$HOME/Downloads/faudio/faudio-20.07/wine_setup_faudio.sh"
-
+                cd "$HOME/Downloads/faudio/faudio-20.07"
+                WINEPREFIX="$WINEPREFIX" ./wine_setup_faudio.sh
+                cd ..
+                cd ..
+                cd ..
                 # Verify if FAudio.dll was installed
                 if [ -f "$FAudio_FILE" ]; then
                     echo "FAudio.dll installed successfully."
