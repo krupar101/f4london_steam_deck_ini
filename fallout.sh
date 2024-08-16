@@ -148,14 +148,13 @@ ask_user_if_he_wants_to_update() {
 
 
     elif [ "$F4_VERSION" == "GOG" ]; then
+    check_if_heroic_is_installed_else_install
 	LAST_STEP=5
 	#Ask what to do if the progress file does not exist.
 		response=$(zenity --question --text="The script allows you to perform 2 actions.\n\n1. Install Fallout London\n2. Update Fallout London to a new version\n\nWhich one do you want to perform?" --width="450" --ok-label="Install" --cancel-label="Update" --title="Choose action")
 		# Check the response
 		if [ $? -eq 0 ]; then
 		    echo "Install selected."
-                check_if_heroic_is_installed_else_install
-                flatpak run com.heroicgameslauncher.hgl > /dev/null 2>&1
 		else
 		    echo "Update selected."
             
@@ -164,7 +163,7 @@ ask_user_if_he_wants_to_update() {
 			# Check the response
 			if [ $? -eq 0 ]; then
 			    echo "Ok pressed"
-                check_if_heroic_is_installed_else_install
+                
                 flatpak run com.heroicgameslauncher.hgl > /dev/null 2>&1
 			else
 			    echo "Cancel pressed"
@@ -606,6 +605,10 @@ if [ "$LAST_STEP" -lt 7 ]; then
         export STEAM_COMPAT_DATA_PATH="$COMPAT_DATA_PATH"
         export WINEPREFIX
         export STEAM_COMPAT_CLIENT_INSTALL_PATH="/home/deck/.steam"
+
+        echo "COMPAT_DATA_PATH is $COMPAT_DATA_PATH"
+        echo "WINEPREFIX is $WINEPREFIX"
+
 
         # Create the dosdevices directory if it doesn't exist
         mkdir -p "$WINEPREFIX/dosdevices"
@@ -1191,8 +1194,8 @@ if [ "$LAST_STEP" -lt 19 ]; then
 fi
 
 # Cleanup progress file
-rm -rf "$PROGRESS_FILE"
-rm -rf "$F4_VERSION_SELECTION_FILE"
+rm -f "$PROGRESS_FILE"
+rm -f "$F4_VERSION_SELECTION_FILE"
 rm -rf "$WINETRICKS_DIR"
 
 
