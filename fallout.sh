@@ -1181,7 +1181,7 @@ if [ "$LAST_STEP" -lt 19 ]; then
                 export PATH="$WINETRICKS_DIR:$PATH"
 
                 # Step 3: Install FAudio using winetricks
-                echo "Installing FAudio with winetricks..."
+                echo "Installing FAudio with winetricks... v10"
                 flatpak run org.winehq.Wine --command "$WINETRICKS_DIR/winetricks" -q faudio
 
                 # winetricks -q faudio
