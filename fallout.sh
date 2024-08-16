@@ -1155,7 +1155,7 @@ if [ "$LAST_STEP" -lt 19 ]; then
         if [ "$F4_VERSION" = "GOG" ]; then
             # Define the path to the Proton prefix
             PROTONPREFIX="$WINEPREFIX"
-
+            echo "$PROTONPREFIX"
             # Define the path to the FAudio.dll file
             FAudio_FILE="$PROTONPREFIX/drive_c/windows/system32/FAudio.dll"
 
