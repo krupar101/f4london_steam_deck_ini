@@ -1,8 +1,8 @@
 #!/bin/bash
 
-echo "Fallout London installation script by krupar"
+echo "Fallout London installation script for Steam Deck by krupar"
 sleep 1
-echo "Published by Overkill"
+echo "Published by Overkill.wtf"
 sleep 1
 
 # Global Paths
