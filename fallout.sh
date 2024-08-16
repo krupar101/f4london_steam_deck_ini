@@ -1135,12 +1135,13 @@ fi
 if [ "$LAST_STEP" -lt 19 ]; then
         read_selected_version
         check_if_fallout_4_is_installed
+
         WINETRICKS_DIR="$HOME/Downloads/winetricks"
 
         # Function to install Wine via Flatpak
         install_wine_flatpak() {
             echo "Installing Wine via Flatpak..."
-            flatpak install -y flathub org.winehq.Wine
+            flatpak install -y flathub app/org.winehq.Wine/x86_64/stable-23.08
         }
 
         # Function to install winetricks
@@ -1155,18 +1156,15 @@ if [ "$LAST_STEP" -lt 19 ]; then
         if [ "$F4_VERSION" = "GOG" ]; then
             # Define the path to the Proton prefix
             PROTONPREFIX="$WINEPREFIX"
-            echo "$PROTONPREFIX"
+
             # Define the path to the FAudio.dll file
             FAudio_FILE="$PROTONPREFIX/drive_c/windows/system32/FAudio.dll"
 
-            # Check if Wine is installed via Flatpak
+            # Check if wine is installed
             if ! flatpak list | grep -q org.winehq.Wine; then
                 echo "Wine is not installed. Installing Wine via Flatpak..."
                 install_wine_flatpak
             fi
-
-            # Set the environment variables to use the Flatpak Wine
-            export WINEPREFIX="$PROTONPREFIX"
 
             # Check if the FAudio.dll file exists
             if [ -f "$FAudio_FILE" ]; then
@@ -1178,13 +1176,13 @@ if [ "$LAST_STEP" -lt 19 ]; then
                 if [ ! -x "$WINETRICKS_DIR/winetricks" ]; then
                     install_winetricks
                 fi
-                flatpak update -y
+
                 # Add local bin directory to PATH
                 export PATH="$WINETRICKS_DIR:$PATH"
 
-                # Step 3: Install FAudio using winetricks with flatpak Wine
-                echo "Installing FAudio with winetricks using flatpak Wine..."
-                flatpak run --command=winetricks org.winehq.Wine -q faudio
+                # Step 3: Install FAudio using winetricks
+                echo "Installing FAudio with winetricks..."
+                winetricks -q faudio
 
                 # Verify if FAudio.dll was installed
                 if [ -f "$FAudio_FILE" ]; then
@@ -1195,6 +1193,8 @@ if [ "$LAST_STEP" -lt 19 ]; then
                 fi
             fi
         fi
+
+
 
     update_progress 19
 fi
