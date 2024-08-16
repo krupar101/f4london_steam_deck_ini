@@ -1133,7 +1133,8 @@ fi
 
 
 if [ "$LAST_STEP" -lt 19 ]; then
-        find_f4_heroic_prefix_location
+        read_selected_version
+        check_if_fallout_4_is_installed
         WINETRICKS_DIR="$HOME/Downloads/winetricks"
 
         # Function to install Wine via Flatpak
