@@ -1133,8 +1133,9 @@ fi
 
 
 if [ "$LAST_STEP" -lt 19 ]; then
-# Define local installation directory for winetricks
+        # Define local installation directory for winetricks
         WINETRICKS_DIR="$HOME/Downloads/winetricks"
+        FLATPAK_WINE_PATH="$HOME/.var/app/org.winehq.Wine"
 
         # Function to install Wine via Flatpak
         install_wine_flatpak() {
@@ -1158,11 +1159,15 @@ if [ "$LAST_STEP" -lt 19 ]; then
             # Define the path to the FAudio.dll file
             FAudio_FILE="$PROTONPREFIX/drive_c/windows/system32/FAudio.dll"
 
-            # Check if wine is installed
+            # Check if wine is installed via Flatpak
             if ! flatpak list | grep -q org.winehq.Wine; then
                 echo "Wine is not installed. Installing Wine via Flatpak..."
                 install_wine_flatpak
             fi
+
+            # Set the environment variables to use the Flatpak Wine
+            export PATH="$FLATPAK_WINE_PATH/files/bin:$PATH"
+            export WINEPREFIX="$PROTONPREFIX"
 
             # Check if the FAudio.dll file exists
             if [ -f "$FAudio_FILE" ]; then
