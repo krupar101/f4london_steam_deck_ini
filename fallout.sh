@@ -1182,7 +1182,7 @@ if [ "$LAST_STEP" -lt 19 ]; then
                 export WINEPREFIX
                 echo "$WINEPREFIX"
                 # Step 3: Install FAudio using winetricks
-                echo "Installing FAudio with winetricks... v13"
+                echo "Installing FAudio with winetricks... v14"
 
                 WINEPREFIX="$WINEPREFIX" $HOME/Downloads/winetricks/winetricks faudio
 
