@@ -1182,7 +1182,9 @@ if [ "$LAST_STEP" -lt 19 ]; then
 
                 # Step 3: Install FAudio using winetricks
                 echo "Installing FAudio with winetricks..."
-                winetricks -q faudio
+                flatpak run org.winehq.Wine --command "$WINETRICKS_DIR/winetricks" -q faudio
+
+                # winetricks -q faudio
 
                 # Verify if FAudio.dll was installed
                 if [ -f "$FAudio_FILE" ]; then
