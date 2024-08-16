@@ -1,5 +1,10 @@
 #!/bin/bash
 
+echo "Fallout London installation script by krupar"
+sleep 1
+echo "Published by Overkill"
+sleep 1
+
 # Global Paths
 DOWNGRADE_LIST_PATH="$HOME/Downloads/folon_downgrade.txt"
 F4LONDON_INI_URL="https://raw.githubusercontent.com/krupar101/f4london_steam_deck_ini/main/Fallout4.INI"
@@ -9,16 +14,25 @@ STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.steam/steam"
 HEROIC_CONFIG_FILE="$HOME/.var/app/com.heroicgameslauncher.hgl/config/heroic/gog_store/installed.json"
 HEROIC_PREFIX_FILE="$HOME/.var/app/com.heroicgameslauncher.hgl/config/heroic/GamesConfig/1998527297.json"
 PROTON_DIR_SSD="$HOME/.steam/steam/steamapps/common/Proton - Experimental"
-PROTON_DIR_SD="/run/media/mmcblk0p1/steamapps/common/Proton - Experimental"
-PROTON_DIR_SD_ALT="/run/media/deck/SD Card/steamapps/common/Proton - Experimental"
-
 
 # Define paths to find installation directory.
 F4_LAUNCHER_NAME="Fallout4Launcher.exe"
 SSD_F4_LAUNCHER_FILE="$HOME/.steam/steam/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
-SD_CARD_F4_LAUNCHER_FILE="/run/media/mmcblk0p1/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
-SSD_F4_LAUNCHER_FILE_ALT="/run/media/deck/SD Card/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
 
+
+check_if_sd_card_is_mounted_and_set_proton_f4_paths () {
+    #Function to automatically detect the SD card mount location and set Proton Directory and Fallout 4 launcher Directory for installation detection
+    SD_MOUNT=$(findmnt -rn -o TARGET | grep '/run/media')
+
+    if [ -n "$SD_MOUNT" ]; then
+        echo "SD Card is mounted at: $SD_MOUNT"
+        PROTON_DIR_SD="$SD_MOUNT/steamapps/common/Proton - Experimental"
+        SD_CARD_F4_LAUNCHER_FILE="$SD_MOUNT/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
+    else
+        echo "SD Card is not mounted."
+    fi
+
+}
 
 find_f4london_install_path() {
 # Check if the file exists
@@ -62,16 +76,17 @@ fi
 
 depot_download_location_choice () {
 # Check if STEAMCMD_DIR is set
+    check_if_sd_card_is_mounted_and_set_proton_f4_paths
     if [ -z "$STEAMCMD_DIR" ]; then
-        if [ -d "/run/media/mmcblk0p1" ] || [ -d "/run/media/deck/SD Card" ]; then
-    	    echo "SD Card detected"
+        if [ -d "$SD_MOUNT" ]; then
+    	    echo "SD Card available"
     	response=$(zenity --forms --title="Choose file download location" --width="450" --text="To downgrade Fallout 4 the script needs to download ~35GB of files.\nPlease ensure you have that much space available on the preferred device (SSD/microSD Card).\n\nWhere would you like to download the files?\n" --ok-label="Internal SSD" --cancel-label="microSD Card")
     		# Check the response
     		if [ $? -eq 0 ]; then
     		    echo "Internal SSD Selected"
                     STEAMCMD_DIR="$HOME/Downloads/SteamCMD"
     		else
-                set_sd_card_paths
+                set_sd_card_paths_4_steamcmddir
     		fi
     	else
     	    echo "SD Card not detected - Default to Internal SSD"
@@ -84,15 +99,13 @@ depot_download_location_choice () {
 }
 
 check_if_proton_experimental_is_installed () {
+    check_if_sd_card_is_mounted_and_set_proton_f4_paths
     if [ -e "$PROTON_DIR_SSD/proton" ]; then
 		echo "Proton Experimental is installed on Internal SSD. Continue..."
 		PROTON_DIR="$PROTON_DIR_SSD"
     elif [ -e "$PROTON_DIR_SD/proton" ]; then
 		echo "Proton Experimental is installed on SD card. Continue..."
 		PROTON_DIR="$PROTON_DIR_SD"
-    elif [ -e "$PROTON_DIR_SD_ALT/proton" ]; then
-		echo "Proton Experimental is installed on SD card in alternative location. Continue..."
-		PROTON_DIR="$PROTON_DIR_SD_ALT"
     else
 		echo "Proton Experimental is not installed."
 		echo ""
@@ -183,19 +196,14 @@ check_if_heroic_is_installed_else_install () {
     fi
 }
 
-set_sd_card_paths () {
+set_sd_card_paths_4_steamcmddir () {
 echo "microSD Card Selected"
-
-    if [ -d "/run/media/mmcblk0p1" ]; then 
+    if [ -d "$SD_MOUNT" ]; then 
         echo "set the path to the default sd card location"
-        STEAMCMD_DIR="/run/media/mmcblk0p1/Downloads/SteamCMD"
-    elif [ -d "/run/media/deck/SD Card" ]; then
-        echo "set the path to the alternative sd card location"
-        STEAMCMD_DIR="/run/media/deck/SD Card/Downloads/SteamCMD"
+        STEAMCMD_DIR="$SD_MOUNT/Downloads/SteamCMD"
     else
         echo "ERROR: This error should never be shown. If it is it means that microsd card was wrongly detected in depot_download_location_choice function."
     fi
-
 }
 
 # Function to update progress
@@ -255,7 +263,7 @@ find_f4_heroic_prefix_location () {
 }
 
 check_if_fallout_4_is_installed () {
-
+    check_if_sd_card_is_mounted_and_set_proton_f4_paths
     if [ "$F4_VERSION" == "STEAM" ]; then
         echo "F4_VERSION is STEAM"
 
@@ -273,14 +281,8 @@ check_if_fallout_4_is_installed () {
             elif [ -e "$SD_CARD_F4_LAUNCHER_FILE" ]; then
                 echo "Fallout 4 recognized to be installed on SD Card"
 
-                    STEAM_APPMANIFEST_PATH="/run/media/mmcblk0p1/steamapps/appmanifest_377160.acf"
-                    FALLOUT_4_DIR="/run/media/mmcblk0p1/steamapps/common/Fallout 4"
-                
-            elif [ -e "$SSD_F4_LAUNCHER_FILE_ALT" ]; then
-                echo "Fallout 4 recognized to be installed on SD Card in alternative location /run/media/deck/SD Card/"
-
-                    STEAM_APPMANIFEST_PATH="/run/media/deck/SD Card/steamapps/appmanifest_377160.acf"
-                    FALLOUT_4_DIR="/run/media/deck/SD Card/steamapps/common/Fallout 4"
+                    STEAM_APPMANIFEST_PATH="$SD_MOUNT/steamapps/appmanifest_377160.acf"
+                    FALLOUT_4_DIR="$SD_MOUNT/steamapps/common/Fallout 4"
             else
                     echo "ERROR: Steam version of Fallout 4 is not installed on this device."
                     exit
@@ -336,7 +338,7 @@ if [ "$LAST_STEP" -lt 1 ]; then
     update_progress 1
 fi
 
-sleep 1
+
 
 # Step 2: Setting up downgrade-list
 if [ "$LAST_STEP" -lt 2 ]; then
@@ -361,7 +363,7 @@ EOL
     update_progress 2
 fi
 
-sleep 1
+
 
 # Step 3: Setting up SteamCMD
 if [ "$LAST_STEP" -lt 3 ]; then
@@ -375,7 +377,7 @@ if [ "$LAST_STEP" -lt 3 ]; then
     update_progress 3
 fi
 
-sleep 1
+
 
 # Step 4: Prompt user for Steam login credentials
 if [ "$LAST_STEP" -lt 4 ]; then
