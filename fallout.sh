@@ -1180,18 +1180,24 @@ if [ "$LAST_STEP" -lt 19 ]; then
                 # Add local bin directory to PATH
                 export PATH="$WINETRICKS_DIR:$PATH"
                 export WINEPREFIX
+                echo "$WINEPREFIX"
                 # Step 3: Install FAudio using winetricks
                 echo "Installing FAudio with winetricks... v13"
 
+                WINEPREFIX="$HOME/Games/Heroic/Prefixes/default/Fallout 4 Game of the Year Edition/pfx" $HOME/Downloads/winetricks/winetricks faudio
+
                 # alias wine="flatpak run org.winehq.Wine"
                 # alias winetricks="flatpak run --command="$WINETRICKS_DIR/winetricks" org.winehq.Wine"
+                # flatpak run --command=winetricks --env="WINEPREFIX=$WINEPREFIX" --env="WINEARCH=win64" org.winehq.Wine --force faudio
 
-                flatpak run --env="WINEPREFIX=$WINEPREFIX" --env="WINEARCH=win32" org.winehq.Wine "$WINETRICKS_DIR/winetricks" faudio
+                # flatpak run --command=$WINETRICKS_DIR/winetricks org.winehq.Wine
+
+                # flatpak run --command="winetricks" --env="WINEARCH=win64" org.winehq.Wine --force faudio
 
 
                 # flatpak run org.winehq.Wine --command "$WINETRICKS_DIR/winetricks" faudio
 
-                winetricks -q faudio
+                # winetricks -q faudio
 
                 # Verify if FAudio.dll was installed
                 if [ -f "$FAudio_FILE" ]; then
