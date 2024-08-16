@@ -1137,28 +1137,22 @@ if [ "$LAST_STEP" -lt 19 ]; then
         read_selected_version
         check_if_fallout_4_is_installed
 
-        WINETRICKS_DIR="$HOME/Downloads/winetricks"
+        FAUDIO_DIR="$HOME/Downloads/winetricks"
 
         # Function to install Wine via Flatpak
         install_wine_flatpak() {
             echo "Installing Wine via Flatpak..."
             flatpak install -y flathub app/org.winehq.Wine/x86_64/stable-23.08
         }
-
-        # Function to install winetricks
-        install_winetricks() {
-            echo "winetricks is not installed locally. Installing it..."
-            mkdir -p "$WINETRICKS_DIR"
-            curl -L -o "$WINETRICKS_DIR/winetricks" https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
-            chmod +x "$WINETRICKS_DIR/winetricks"
-        }
-
+        
         # Step 1: Check if the F4_VERSION variable is set to "GOG"
         if [ "$F4_VERSION" = "GOG" ]; then
             # Define the path to the Proton prefix
 
             # Define the path to the FAudio.dll file
             FAudio_FILE="$WINEPREFIX/drive_c/windows/system32/FAudio.dll"
+
+
 
             # Check if wine is installed
             if ! flatpak list | grep -q org.winehq.Wine; then
@@ -1172,32 +1166,18 @@ if [ "$LAST_STEP" -lt 19 ]; then
             else
                 echo "FAudio.dll is not installed. Proceeding with installation."
 
-                # Step 2: Check if winetricks is installed locally
-                if [ ! -x "$WINETRICKS_DIR/winetricks" ]; then
-                    install_winetricks
-                fi
-
                 # Add local bin directory to PATH
-                export PATH="$WINETRICKS_DIR:$PATH"
-                export WINEPREFIX
+
                 echo "$WINEPREFIX"
                 # Step 3: Install FAudio using winetricks
-                echo "Installing FAudio with winetricks... v14"
+                echo "Installing FAudio v15"
 
-                WINEPREFIX="$WINEPREFIX" $HOME/Downloads/winetricks/winetricks faudio
-
-                # alias wine="flatpak run org.winehq.Wine"
-                # alias winetricks="flatpak run --command="$WINETRICKS_DIR/winetricks" org.winehq.Wine"
-                # flatpak run --command=winetricks --env="WINEPREFIX=$WINEPREFIX" --env="WINEARCH=win64" org.winehq.Wine --force faudio
-
-                # flatpak run --command=$WINETRICKS_DIR/winetricks org.winehq.Wine
-
-                # flatpak run --command="winetricks" --env="WINEARCH=win64" org.winehq.Wine --force faudio
-
-
-                # flatpak run org.winehq.Wine --command "$WINETRICKS_DIR/winetricks" faudio
-
-                # winetricks -q faudio
+                mkdir -p $HOME/Downloads/faudio
+                wget -P "$HOME/Downloads/faudio" https://github.com/Kron4ek/FAudio-Builds/releases/download/20.07/faudio-20.07.tar.xz
+                tar xvf "$HOME/Downloads/faudio/faudio-20.07.tar.xz"
+                tar xvf "$HOME/Downloads/faudio/faudio-20.07.tar.xz" -C "$HOME/Downloads/faudio"
+                chmod +x "$HOME/Downloads/faudio/faudio-20.07"
+                WINEPREFIX="$WINEPREFIX" ./"$HOME/Downloads/faudio/faudio-20.07/wine_setup_faudio.sh"
 
                 # Verify if FAudio.dll was installed
                 if [ -f "$FAudio_FILE" ]; then
@@ -1217,7 +1197,7 @@ fi
 # Cleanup progress file
 rm -f "$PROGRESS_FILE"
 rm -f "$F4_VERSION_SELECTION_FILE"
-rm -rf "$WINETRICKS_DIR"
+rm -rf "$FAUDIO_DIR"
 
 
     if [ "$F4_VERSION" == "STEAM" ]; then
