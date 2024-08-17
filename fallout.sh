@@ -1,9 +1,15 @@
 #!/bin/bash
-echo ""
+echo "-------------------------------------------------------------"
 echo ""
 echo "Fallout London installation script for Steam Deck by krupar"
+echo ""
 sleep 1
+echo "-------------------------------------------------------------"
+sleep 1
+echo ""
 echo "Published by Overkill.wtf"
+echo ""
+echo "-------------------------------------------------------------"
 sleep 1
 
 # Global Paths
@@ -1149,6 +1155,7 @@ if [ "$LAST_STEP" -lt 19 ]; then
             # Check if the FAudio.dll file exists
             if [ -f "$FAudio_FILE" ]; then
                 printf "FAudio.dll is installed.\n"
+                echo "$FAudio_Target" 
             else
                 echo "FAudio.dll is not installed. Proceeding with installation."
 
@@ -1156,7 +1163,7 @@ if [ "$LAST_STEP" -lt 19 ]; then
                 export WINEPREFIX
                 echo "$WINEPREFIX"
                 # Step 3: Install FAudio using winetricks
-                echo "Installing FAudio v18"
+                echo "Installing FAudio"
 
 #!/bin/bash# Variables
 # WINEPREFIX_PATH="$WINEPREFIX"
@@ -1166,8 +1173,11 @@ if [ "$LAST_STEP" -lt 19 ]; then
                 mkdir -p $FAUDIO_DIR
                 wget -P "$FAUDIO_DIR" -O "$FAUDIO_DIR/faudio-20.07.tar.xz" https://github.com/Kron4ek/FAudio-Builds/releases/download/20.07/faudio-20.07.tar.xz
                 tar xvf "$FAUDIO_DIR/faudio-20.07.tar.xz" -C "$HOME/Downloads/faudio"
-                cp -f "$FAUDIO_DIR/faudio-20.07/x64/FAudio.dll" "$FAudio_FILE"
 
+                for dll in "$FAUDIO_DIR/faudio-20.07/x64/"*.dll; do
+                cp -f "$dll" "$FAudio_Target/"
+                echo "$dll copied correctly"
+                done
 
                 # chmod +x "$HOME/Downloads/faudio/faudio-20.07"
                 # cd "$HOME/Downloads/faudio/faudio-20.07"
