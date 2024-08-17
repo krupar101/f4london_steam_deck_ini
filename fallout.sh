@@ -1137,28 +1137,14 @@ if [ "$LAST_STEP" -lt 19 ]; then
         read_selected_version
         check_if_fallout_4_is_installed
 
-        FAUDIO_DIR="$HOME/Downloads/winetricks"
-
-        # Function to install Wine via Flatpak
-        install_wine_flatpak() {
-            echo "Installing Wine via Flatpak..."
-            flatpak install -y flathub app/org.winehq.Wine/x86_64/stable-23.08
-        }
-        
+        FAUDIO_DIR="$HOME/Downloads/faudio"
+        FAudio_Target="$WINEPREFIX/drive_c/windows/system32"
         # Step 1: Check if the F4_VERSION variable is set to "GOG"
         if [ "$F4_VERSION" = "GOG" ]; then
             # Define the path to the Proton prefix
 
             # Define the path to the FAudio.dll file
-            FAudio_FILE="$WINEPREFIX/drive_c/windows/system32/FAudio.dll"
-
-
-
-            # Check if wine is installed
-            if ! flatpak list | grep -q org.winehq.Wine; then
-                echo "Wine is not installed. Installing Wine via Flatpak..."
-                install_wine_flatpak
-            fi
+            FAudio_FILE="$FAudio_Target/FAudio.dll"
 
             # Check if the FAudio.dll file exists
             if [ -f "$FAudio_FILE" ]; then
@@ -1172,15 +1158,23 @@ if [ "$LAST_STEP" -lt 19 ]; then
                 # Step 3: Install FAudio using winetricks
                 echo "Installing FAudio v17"
 
-                mkdir -p $HOME/Downloads/faudio
-                wget -P "$HOME/Downloads/faudio" https://github.com/Kron4ek/FAudio-Builds/releases/download/20.07/faudio-20.07.tar.xz
-                tar xvf "$HOME/Downloads/faudio/faudio-20.07.tar.xz" -C "$HOME/Downloads/faudio"
-                chmod +x "$HOME/Downloads/faudio/faudio-20.07"
-                cd "$HOME/Downloads/faudio/faudio-20.07"
-                WINE="$HOME/.local/share/flatpak/app/org.winehq.Wine/current/active/export/bin/org.winehq.Wine" WINEPREFIX="$WINEPREFIX" ./wine_setup_faudio.sh
-                cd ..
-                cd ..
-                cd ..
+#!/bin/bash# Variables
+# WINEPREFIX_PATH="$WINEPREFIX"
+# Ensure the Wine prefix path is provided
+
+#sorta working
+                mkdir -p $FAUDIO_DIR
+                wget -P "$FAUDIO_DIR" -O "$FAUDIO_DIR/faudio-20.07.tar.xz" https://github.com/Kron4ek/FAudio-Builds/releases/download/20.07/faudio-20.07.tar.xz
+                tar xvf "$FAUDIO_DIR/faudio-20.07.tar.xz" -C "$HOME/Downloads/faudio"
+                cp -f "$FAUDIO_DIR/faudio-20.07/x64/FAudio.dll" "$FAudio_FILE"
+
+
+                # chmod +x "$HOME/Downloads/faudio/faudio-20.07"
+                # cd "$HOME/Downloads/faudio/faudio-20.07"
+                # WINE="$HOME/.local/share/flatpak/app/org.winehq.Wine/current/active/export/bin/org.winehq.Wine" WINEPREFIX="$WINEPREFIX" ./wine_setup_faudio.sh
+                # cd ..
+                # cd ..
+                # cd ..
                 # Verify if FAudio.dll was installed
                 if [ -f "$FAudio_FILE" ]; then
                     echo "FAudio.dll installed successfully."
