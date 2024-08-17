@@ -1,15 +1,15 @@
 #!/bin/bash
-echo "-------------------------------------------------------------"
+echo "---------------------"
 echo ""
 echo "Fallout London installation script for Steam Deck by krupar"
 echo ""
+echo "---------------------"
 sleep 1
-echo "-------------------------------------------------------------"
-sleep 1
+echo "---------------------"
 echo ""
 echo "Published by Overkill.wtf"
 echo ""
-echo "-------------------------------------------------------------"
+echo "---------------------"
 sleep 1
 
 # Global Paths
