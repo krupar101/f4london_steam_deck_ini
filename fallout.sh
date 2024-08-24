@@ -24,7 +24,7 @@ PROTON_DIR_SSD="$HOME/.steam/steam/steamapps/common/Proton - Experimental"
 
 # Define paths to find installation directory.
 F4_LAUNCHER_NAME="Fallout4Launcher.exe"
-SSD_F4_LAUNCHER_FILE="$HOME/.steam/steam/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
+SSD_F4_LAUNCHER_FILE="/mnt/Secondary/SteamLibrary/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
 
 
 check_if_sd_card_is_mounted_and_set_proton_f4_paths () {
@@ -283,7 +283,7 @@ check_if_fallout_4_is_installed () {
                 echo "Fallout 4 recognized to be installed on Internal SSD"
 
                     STEAM_APPMANIFEST_PATH="$HOME/.steam/steam/steamapps/appmanifest_377160.acf"
-                    FALLOUT_4_DIR="$HOME/.steam/steam/steamapps/common/Fallout 4"
+                    FALLOUT_4_DIR="/mnt/Secondary/SteamLibrary/steamapps/common/Fallout 4"
 
             elif [ -e "$SD_CARD_F4_LAUNCHER_FILE" ]; then
                 echo "Fallout 4 recognized to be installed on SD Card"
