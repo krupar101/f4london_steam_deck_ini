@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 echo "---------------------"
 echo ""
 echo "Fallout 4 Downgrader for Steam Deck / Linux by krupar"
