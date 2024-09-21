@@ -103,7 +103,7 @@ CUSTOM_PATH=0
     		fi
     	else
     	    echo "SD Card not detected - Default to Internal SSD"
-    		zenity --info --title="Download process message" --width="450" --text="To downgrade Fallout 4 the script needs to download ~35GB of files.\nPlease ensure you have that much space available on your SSD.\n\nConfirm this window only after you make sure you have enough memory." 2>/dev/null
+    		zenity --info --title="Download process message" --width="450" --text="To downgrade Fallout 4 the script needs to download ~35GB of files.\nPlease ensure you have that much space available on your SSD.\n\nConfirm this window only after you make sure you have enough space." 2>/dev/null
         	STEAMCMD_DIR="$HOME/Downloads/SteamCMD"
         fi
     else
