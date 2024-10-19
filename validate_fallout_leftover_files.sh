@@ -23,6 +23,7 @@ VALID_FILES=(
 "./WinHTTP.dll"
 "./CustomControlMap.txt"
 "./Fallout4Launcher.exe"
+"./f4se_loader.exe"
 "./flexRelease_x64.dll"
 "./f4se_readme.txt"
 "./Ultra.ini"
