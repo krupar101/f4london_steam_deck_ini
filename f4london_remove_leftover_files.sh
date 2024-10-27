@@ -1,7 +1,99 @@
 #!/bin/bash
 
+HEROIC_CONFIG_FILE="$HOME/.var/app/com.heroicgameslauncher.hgl/config/heroic/gog_store/installed.json"
+F4_LAUNCHER_NAME="Fallout4Launcher.exe"
+SSD_F4_LAUNCHER_FILE="$HOME/.steam/steam/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
+
+select_gog_or_steam_to_update_or_install() {
+	response=$(zenity --question --text="Which Version of Fallout 4 do you own?" --width="450" --ok-label="GoG" --cancel-label="Steam" --title="Fallout 4 version selection")
+
+	# Check the response
+	if [ $? -eq 0 ]; then
+		echo "GoG Selected"
+		F4_VERSION="GOG"
+	else
+		echo "Steam selected"
+		F4_VERSION="STEAM"
+	fi
+}
+
+check_if_sd_card_is_mounted_and_set_proton_f4_paths() {
+	#Function to automatically detect the SD card mount location and set Proton Directory and Fallout 4 launcher Directory for installation detection
+	SD_MOUNT=$(findmnt -rn -o TARGET | grep '/run/media')
+
+	if [ -n "$SD_MOUNT" ]; then
+		echo "SD Card is mounted at: $SD_MOUNT"
+		SD_CARD_F4_LAUNCHER_FILE="$SD_MOUNT/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
+	else
+		echo "SD Card is not mounted."
+	fi
+
+}
+
+find_fallout4_heroic_install_path() {
+	# Check if the file exists
+	if [[ ! -f "$HEROIC_CONFIG_FILE" ]]; then
+		echo "Fallout 4 not recognized to be installed in Heroic Launcher."
+		exit
+	fi
+
+	# Search for the install_path for the game "Fallout London"
+	install_path=$(jq -r '.installed[] | select(.install_path | contains("Fallout 4")) | .install_path' "$HEROIC_CONFIG_FILE")
+
+	# Check if the install_path was found
+	if [[ -n "$install_path" ]]; then
+		echo "Fallout 4 installation path found."
+		FALLOUT_4_DIR="$install_path"
+	else
+		echo "Fallout 4 not recognized to be installed in Heroic Launcher. Install it and try again."
+		exit
+	fi
+}
+
+check_if_fallout_4_is_installed() {
+	check_if_sd_card_is_mounted_and_set_proton_f4_paths
+	if [ "$F4_VERSION" == "STEAM" ]; then
+		echo "F4_VERSION is STEAM"
+
+		# Check where Steam Version of Fallout 4 is installed.
+		if [ -e "$SSD_F4_LAUNCHER_FILE" ]; then
+			echo "Fallout 4 recognized to be installed on Internal SSD"
+			FALLOUT_4_DIR="$HOME/.steam/steam/steamapps/common/Fallout 4"
+
+		elif [ -e "$SD_CARD_F4_LAUNCHER_FILE" ]; then
+			echo "Fallout 4 recognized to be installed on SD Card"
+			FALLOUT_4_DIR="$SD_MOUNT/steamapps/common/Fallout 4"
+		else
+			echo "ERROR: Steam version of Fallout 4 is not installed on this device."
+			exit
+		fi
+	elif [ "$F4_VERSION" == "GOG" ]; then
+		echo "F4_VERSION is GOG"
+		find_fallout4_heroic_install_path
+	else
+		echo "Fallout 4 Installation was not found. Exiting the script"
+		exit
+	fi
+
+}
+
+select_gog_or_steam_to_update_or_install
+check_if_fallout_4_is_installed
+
 # 1. Define the path to check files inside it
-CHECK_PATH="$HOME/.steam/steam/steamapps/common/Fallout 4"
+CHECK_PATH="$FALLOUT_4_DIR"
+
+echo $CHECK_PATH
+
+	response=$(zenity --question --text="Fallout 4 installation path was found.\nDo you wish to proceed with removing \nleftover files from previous Fallout 4 installations\nand leave only those required for Fallout London to work?\n\n*Note that this action is potentially dangerous and can potentially damage your device\n\nRecognized path:\n$CHECK_PATH" --width="450" --ok-label="I acknowledge the risk, this is my responsibility. Proceed." --cancel-label="Cancel" --title="Are you sure?")
+
+	# Check the response
+	if [ $? -eq 0 ]; then
+		echo "Risk accepted."
+	else
+		exit
+	fi
+
 
 # 2. Create a list of valid files (the paths you provided)
 VALID_FILES=(
@@ -159,7 +251,6 @@ VALID_FILES=(
 "./Data/Video/Ending_Conclusion02.bk2"
 "./Data/DLCworkshop01 - Textures.ba2"
 "./Data/DLCRobot - Textures.ba2"
-"./Data/No_Shadow_Lights.esp"
 "./Data/DLCNukaWorld - Voices_en.ba2"
 "./Data/DLCNukaWorld - Geometry.csg"
 "./Data/DLCRobot - Voices_en.ba2"
@@ -205,7 +296,6 @@ VALID_FILES=(
 "./Data/F4SE/Plugins"
 "./Data/F4SE/Plugins/PRKF.dll"
 "./Data/F4SE/Plugins/XDI.dll"
-"./Data/F4SE/Plugins/HighFPSPhysicsFix.ini"
 "./Data/F4SE/Plugins/Buffout4.dll"
 "./Data/F4SE/Plugins/ConsoleUtilF4.dll"
 "./Data/F4SE/Plugins/FavoritesMenuEx.dll"
@@ -218,11 +308,9 @@ VALID_FILES=(
 "./Data/F4SE/Plugins/Buffout4/third_party.txt"
 "./Data/F4SE/Plugins/Buffout4/license.txt"
 "./Data/F4SE/Plugins/Buffout4/config.toml"
-"./Data/F4SE/Plugins/HighFPSPhysicsFix.dll"
 "./Data/F4SE/plugins"
 "./Data/F4SE/plugins/PRKF.dll"
 "./Data/F4SE/plugins/XDI.dll"
-"./Data/F4SE/plugins/HighFPSPhysicsFix.ini"
 "./Data/F4SE/plugins/Buffout4.dll"
 "./Data/F4SE/plugins/ConsoleUtilF4.dll"
 "./Data/F4SE/plugins/FavoritesMenuEx.dll"
@@ -235,7 +323,6 @@ VALID_FILES=(
 "./Data/F4SE/plugins/Buffout4/third_party.txt"
 "./Data/F4SE/plugins/Buffout4/license.txt"
 "./Data/F4SE/plugins/Buffout4/config.toml"
-"./Data/F4SE/plugins/HighFPSPhysicsFix.dll"
 "./Data/DLCworkshop01 - Main.ba2"
 "./Data/Fallout4 - Materials.ba2"
 "./Data/LondonWorldSpace - MeshesExtra.ba2"
