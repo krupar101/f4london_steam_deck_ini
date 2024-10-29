@@ -7,6 +7,12 @@ echo "---------------------"
 sleep 1
 echo "---------------------"
 echo ""
+echo "Buy me a coffee @ https://ko-fi.com/krupar"
+echo ""
+echo "---------------------"
+sleep 1
+echo "---------------------"
+echo ""
 echo "Published by Overkill.wtf"
 echo ""
 echo "---------------------"
