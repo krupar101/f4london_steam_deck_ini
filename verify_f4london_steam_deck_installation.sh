@@ -13,12 +13,24 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-
+echo "---------------------"
 echo ""
 echo "This script is directly related to Fallout London Steam Deck installation instructions published in this reddit thread: https://www.reddit.com/r/fallout4london/comments/1ebrc74/steam_deck_instructions/"
 echo ""
+echo "---------------------"
+sleep 1
+echo "---------------------"
 echo ""
-
+echo "Fallout London installation script for Steam Deck by krupar"
+echo ""
+echo "---------------------"
+sleep 1
+echo "---------------------"
+echo ""
+echo "Buy me a coffee @ https://ko-fi.com/krupar"
+echo ""
+echo "---------------------"
+sleep 1
 # Prompt the user for the game version
 printf "${YELLOW}Fallout London installation verification script for Steam Deck.\nWhich version of the instructions did you follow? ('g' for GoG / 's' for Steam)${NC}\n"
 read platform
