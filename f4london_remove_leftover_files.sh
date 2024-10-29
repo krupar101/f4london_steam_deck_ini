@@ -1,5 +1,10 @@
 #!/bin/bash
-
+echo "---------------------"
+echo ""
+echo "Fallout London leftover file removal script for Steam Deck / Linux by krupar"
+echo ""
+echo "---------------------"
+sleep 1
 echo "---------------------"
 echo ""
 echo "Buy me a coffee @ https://ko-fi.com/krupar"
