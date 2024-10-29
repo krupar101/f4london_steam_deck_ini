@@ -1,18 +1,5 @@
 #!/bin/bash
 
-echo "---------------------"
-echo ""
-echo "Fallout London leftover file removal script for Steam Deck / Linux by krupar"
-echo ""
-echo "---------------------"
-sleep 1
-echo "---------------------"
-echo ""
-echo "Buy me a coffee @ https://ko-fi.com/krupar"
-echo ""
-echo "---------------------"
-sleep 1
-
 #Define default paths to verify
 heroic_f4_path="$HOME/Games/Heroic/Fallout 4 GOTY"
 heroic_f4london_steamuser="$HOME/Games/Heroic/Prefixes/default/Fallout London/pfx/drive_c/users/steamuser"
