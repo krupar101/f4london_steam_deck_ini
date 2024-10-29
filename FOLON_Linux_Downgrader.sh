@@ -6,6 +6,12 @@ echo "Fallout 4 Downgrader for Steam Deck / Linux by krupar"
 echo ""
 echo "---------------------"
 sleep 1
+echo "---------------------"
+echo ""
+echo "Buy me a coffee @ https://ko-fi.com/krupar"
+echo ""
+echo "---------------------"
+sleep 1
 
 F4_LAUNCHER_NAME="Fallout4Launcher.exe"
 SSD_F4_LAUNCHER_FILE="$HOME/.steam/steam/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
