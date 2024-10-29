@@ -1,5 +1,12 @@
 #!/bin/bash
 
+echo "---------------------"
+echo ""
+echo "Buy me a coffee @ https://ko-fi.com/krupar"
+echo ""
+echo "---------------------"
+sleep 1
+
 HEROIC_CONFIG_FILE="$HOME/.var/app/com.heroicgameslauncher.hgl/config/heroic/gog_store/installed.json"
 F4_LAUNCHER_NAME="Fallout4Launcher.exe"
 SSD_F4_LAUNCHER_FILE="$HOME/.steam/steam/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
