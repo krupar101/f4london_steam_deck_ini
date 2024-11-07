@@ -69,7 +69,7 @@ if [ "$platform" == "g" ]; then
         fi
         
             # Define the given checksum
-            given_checksum="69105790e841af66b082bfb2ec2430e26fce3c279f81cbe0312bbedd1705b6a9"
+            given_checksum="c8f86300f3562346be11ea11d0e638625b5660e6a327f54f2ef183e1c46b6073"
 
             # Define the file path
             file_path="$heroic_f4london_steamuser/Documents/My Games/Fallout4/Fallout4.INI"
@@ -480,7 +480,7 @@ fi
     	
 
             # Define the given checksum
-            given_checksum="69105790e841af66b082bfb2ec2430e26fce3c279f81cbe0312bbedd1705b6a9"
+            given_checksum="c8f86300f3562346be11ea11d0e638625b5660e6a327f54f2ef183e1c46b6073"
 
             # Define the file path
             file_path="$steam_f4_steamuser/Documents/My Games/Fallout4/Fallout4.INI"
