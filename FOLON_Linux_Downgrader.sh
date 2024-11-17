@@ -21,7 +21,7 @@ CUSTOM_PATH=0
 
 # 1. Check if SD Card is installed
 
-    SD_MOUNT=$(findmnt -rn -o TARGET | grep '/run/media')
+    SD_MOUNT=$(findmnt -rn -o TARGET | grep '/run/media' | sed 's/\\x20/ /g')
     echo "Checking if SD Card is mounted [Handheld Specific]."
     if [ -n "$SD_MOUNT" ]; then
         echo "SD Card is mounted at: $SD_MOUNT"
