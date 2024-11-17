@@ -1,12 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 echo "---------------------"
 echo ""
 echo "Fallout London installation script for Steam Deck by krupar"
-echo ""
-echo "---------------------"
-sleep 1
-echo "---------------------"
-echo ""
 echo "Buy me a coffee @ https://ko-fi.com/krupar"
 echo ""
 echo "---------------------"
@@ -34,7 +29,7 @@ SSD_F4_LAUNCHER_FILE="$HOME/.steam/steam/steamapps/common/Fallout 4/$F4_LAUNCHER
 
 check_if_sd_card_is_mounted_and_set_proton_f4_paths() {
 	#Function to automatically detect the SD card mount location and set Proton Directory and Fallout 4 launcher Directory for installation detection
-	SD_MOUNT=$(findmnt -rn -o TARGET | grep '/run/media')
+	SD_MOUNT=$(findmnt -rn -o TARGET | grep '/run/media' | sed 's/\x20/ /g')
 
 	if [ -n "$SD_MOUNT" ]; then
 		echo "SD Card is mounted at: $SD_MOUNT"
@@ -183,7 +178,7 @@ ask_user_if_he_wants_to_update() {
 		else
 			echo "Update selected."
 
-			response=$(zenity --question --text="Heroic Launcher will now start.\nMake sure to update Fallout London to the newest version.\n\nIf you don't have it installed make sure you are logged in to GoG and install Fallout London.\n\nOnce completed close Heroic Launcher.\n\nPress 'Continue' to start the process." --width="450" --ok-label="Continue" --cancel-label="Cancel" --title="Check if updates are applied")
+			response=$(zenity --question --text="Heroic Launcher will now start.\nMake sure to update Fallout London to the newest version.\n\nIf you don't have it installed make sure you are logged in to GoG and install Fallout London.\n\nOnce completed close Heroic Launcher.\n\n*DO NOT LAUNCH THE GAME AT THIS STAGE. \nMAKE SURE THAT FALLOUT LONDON IS INSTALLED \nAND IF THERE ARE ANY UPDATES FOR IT MAKE SURE TO APPLY THEM.\n\nPress 'Continue' to start the process." --width="450" --ok-label="Continue" --cancel-label="Cancel" --title="Check if updates are applied")
 			printf "\n\nHeroic Launcher will now start.\nMake sure to update Fallout London to the newest version.\n\nIf you don't have it installed make sure you are logged in to GoG and install Fallout London.\n\nOnce completed close Heroic Launcher.\n\n"
 			# Check the response
 			if [ $? -eq 0 ]; then
