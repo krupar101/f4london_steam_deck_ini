@@ -116,7 +116,16 @@ check_if_fallout_4_is_installed
 
 echo $FALLOUT_4_DIR
 
-fallout4_f4se_dir="$FALLOUT_4_DIR/Data/F4SE/plugins"
+# Check for the correct folder capitalization for fallout4_f4se_dir
+if [ -d "$FALLOUT_4_DIR/Data/F4SE/Plugins" ]; then
+    fallout4_f4se_dir="$FALLOUT_4_DIR/Data/F4SE/Plugins"
+elif [ -d "$FALLOUT_4_DIR/Data/F4SE/plugins" ]; then
+    fallout4_f4se_dir="$FALLOUT_4_DIR/Data/F4SE/plugins"
+else
+    echo "ERROR: Neither 'Plugins' nor 'plugins' directory exists in the F4SE directory. Exiting."
+    exit 1
+fi
+
 fallout4_appdata_dir="$FALLOUT_4_STEAMUSER_DIR/AppData/Local/Fallout4"
 fallout4_mygames_dir="$FALLOUT_4_STEAMUSER_DIR/Documents/My Games/Fallout4/"
 
