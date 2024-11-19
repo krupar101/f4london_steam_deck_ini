@@ -117,6 +117,8 @@ check_if_fallout_4_is_installed
 echo $FALLOUT_4_DIR
 
 fallout4_f4se_dir="$FALLOUT_4_DIR/Data/F4SE/plugins"
+fallout4_appdata_dir="$FALLOUT_4_STEAMUSER_DIR/AppData/Local/Fallout4"
+fallout4_mygames_dir="$FALLOUT_4_STEAMUSER_DIR/Documents/My Games/Fallout4/"
 
 echo $fallout4_f4se_dir
 echo $fallout4_mygames_dir
