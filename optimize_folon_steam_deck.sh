@@ -160,6 +160,6 @@ unzip -o "$FOLON_OPTIMIZATION_DIR/documents_ini_folon.zip" -d "$fallout4_mygames
 unzip -o "$FOLON_OPTIMIZATION_DIR/f4se_plugins_folon.zip" -d "$fallout4_f4se_dir"
 
 # Clean up the downloads folder
-# rm -rf "$FOLON_OPTIMIZATION_DIR"
+rm -rf "$FOLON_OPTIMIZATION_DIR"
 
 echo "Unzipping complete and cleanup done."
