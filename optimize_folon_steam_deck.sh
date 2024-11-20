@@ -128,10 +128,12 @@ fi
 
 fallout4_appdata_dir="$FALLOUT_4_STEAMUSER_DIR/AppData/Local/Fallout4"
 fallout4_mygames_dir="$FALLOUT_4_STEAMUSER_DIR/Documents/My Games/Fallout4/"
+fallout4_data_dir="$FALLOUT_4_DIR/Data"
 
 echo $fallout4_f4se_dir
 echo $fallout4_mygames_dir
 echo $fallout4_appdata_dir
+echo $fallout4_data_dir
 
 response=$(zenity --list \
     --title="Fallout 4 Preset Selector" \
@@ -194,6 +196,7 @@ unzip -o "$FOLON_OPTIMIZATION_DIR/folon_steam_deck_optimization.zip" -d "$FOLON_
 unzip -o "$FOLON_OPTIMIZATION_DIR/appdata_folon.zip" -d "$fallout4_appdata_dir"
 unzip -o "$FOLON_OPTIMIZATION_DIR/documents_ini_folon.zip" -d "$fallout4_mygames_dir"
 unzip -o "$FOLON_OPTIMIZATION_DIR/f4se_plugins_folon.zip" -d "$fallout4_f4se_dir"
+unzip -o "$FOLON_OPTIMIZATION_DIR/f4_data_folon.zip" -d "$fallout4_data_dir"
 
 # Clean up the downloads folder
 rm -rf "$FOLON_OPTIMIZATION_DIR"
