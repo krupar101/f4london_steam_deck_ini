@@ -141,7 +141,7 @@ response=$(zenity --list \
     TRUE "Optimized (Recommended)" \
     FALSE "Medium" \
     FALSE "Potato" \
-    --width=450)
+    --width=450 --height=400)
 
 # Check the result
 if [ -z "$response" ]; then
@@ -174,7 +174,7 @@ echo "$ZIP_URL"
 mkdir -p "$FOLON_OPTIMIZATION_DIR"
 
 # Download the zip file
-curl -L -o "$FOLON_OPTIMIZATION_DIR/${LINK_PREFIX}folon_steam_deck_optimization.zip" "$ZIP_URL"
+curl -L -o "$FOLON_OPTIMIZATION_DIR/folon_steam_deck_optimization.zip" "$ZIP_URL"
 
 # Unzip the main downloaded zip
 unzip -o "$FOLON_OPTIMIZATION_DIR/folon_steam_deck_optimization.zip" -d "$FOLON_OPTIMIZATION_DIR"
