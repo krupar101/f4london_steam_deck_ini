@@ -184,6 +184,17 @@ unzip -o "$FOLON_OPTIMIZATION_DIR/appdata_folon.zip" -d "$fallout4_appdata_dir"
 unzip -o "$FOLON_OPTIMIZATION_DIR/documents_ini_folon.zip" -d "$fallout4_mygames_dir"
 unzip -o "$FOLON_OPTIMIZATION_DIR/f4se_plugins_folon.zip" -d "$fallout4_f4se_dir"
 
+fallout4_ini_file="$fallout4_mygames_dir/Fallout4.ini"
+
+# Check if the file exists and remove it
+if [[ -f "$fallout4_ini_file" ]]; then
+    echo "Removing $fallout4_ini_file..."
+    rm "$fallout4_ini_file"
+    echo "File removed."
+else
+    echo "File $fallout4_ini_file does not exist."
+fi
+
 # Clean up the downloads folder
 rm -rf "$FOLON_OPTIMIZATION_DIR"
 
