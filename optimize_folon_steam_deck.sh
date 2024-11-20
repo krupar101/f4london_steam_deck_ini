@@ -133,17 +133,41 @@ echo $fallout4_f4se_dir
 echo $fallout4_mygames_dir
 echo $fallout4_appdata_dir
 
-	response=$(zenity --question --text="Fallout 4 installation path was found.\nDo you wish to proceed with optimizing your game to the best known settings? \n\nRecognized path:\n$FALLOUT_4_DIR" --width="450" --ok-label="Proceed" --cancel-label="Cancel" --title="Confirm action")
+response=$(zenity --list \
+    --title="Fallout 4 Preset Selector" \
+    --text="Fallout 4 installation path was found.\n\nPlease select a preset that you wish to apply.\n\n[Medium and Potato presets cause the main menu audio to return to default]\n\nRecognized path:\n$FALLOUT_4_DIR" \
+    --radiolist \
+    --column="Select" --column="Preset" \
+    TRUE "Optimized (Recommended)" \
+    FALSE "Medium" \
+    FALSE "Potato" \
+    --width=450)
 
-	# Check the response
-	if [ $? -eq 0 ]; then
-		echo "Proceed."
+# Check the result
+if [ -z "$response" ]; then
+    echo "No preset selected. Exiting."
+else
+
+	# Handle each choice
+	if [ "$response" == "Optimized (Recommended)" ]; then
+	    echo "Applying Optimized (Recommended) preset..."
+	    LINK_PREFIX=""
+	elif [ "$response" == "Medium" ]; then
+	    echo "Applying Medium preset..."
+	    LINK_PREFIX="medium_"
+	elif [ "$response" == "Potato" ]; then
+	    echo "Applying Potato preset..."
+	    LINK_PREFIX="potato_"
 	else
-		exit
-	fi
+	    echo "Unknown option selected. Exiting."
+	    exit 1
+	    
+fi
+
+fi
 
 FOLON_OPTIMIZATION_DIR="$HOME/Downloads/folon_optimization"
-ZIP_URL="https://github.com/krupar101/f4london_steam_deck_ini/raw/refs/heads/main/folon_steam_deck_optimization.zip"
+ZIP_URL="https://github.com/krupar101/f4london_steam_deck_ini/raw/refs/heads/main/${LINK_PREFIX}folon_steam_deck_optimization.zip"
 
 # Create the downloads folder if it doesn't exist
 mkdir -p "$FOLON_OPTIMIZATION_DIR"
