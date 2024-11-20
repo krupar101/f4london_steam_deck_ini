@@ -137,7 +137,7 @@ echo $fallout4_data_dir
 
 response=$(zenity --list \
     --title="Fallout 4 Preset Selector" \
-    --text="Fallout 4 installation path was found.\n\nPlease select a preset that you wish to apply.\n\n[Medium and Potato presets cause the main menu audio to return to default]\n\nRecognized path:\n$FALLOUT_4_DIR" \
+    --text="Fallout 4 installation path was found.\n\nPlease select a preset that you wish to apply.\n\n[Potato preset fixes the 1FPS slideshow mode the game sometimes enters]\n\nRecognized path:\n$FALLOUT_4_DIR" \
     --radiolist \
     --column="Select" --column="Preset" \
     TRUE "Optimized (Recommended)" \
