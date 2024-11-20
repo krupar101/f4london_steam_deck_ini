@@ -168,12 +168,13 @@ fi
 
 FOLON_OPTIMIZATION_DIR="$HOME/Downloads/folon_optimization"
 ZIP_URL="https://github.com/krupar101/f4london_steam_deck_ini/raw/refs/heads/main/${LINK_PREFIX}folon_steam_deck_optimization.zip"
+echo "ZIP URL:"
 echo "$ZIP_URL"
 # Create the downloads folder if it doesn't exist
 mkdir -p "$FOLON_OPTIMIZATION_DIR"
 
 # Download the zip file
-curl -L -o "$FOLON_OPTIMIZATION_DIR/folon_steam_deck_optimization.zip" "$ZIP_URL"
+curl -L -o "$FOLON_OPTIMIZATION_DIR/${LINK_PREFIX}folon_steam_deck_optimization.zip" "$ZIP_URL"
 
 # Unzip the main downloaded zip
 unzip -o "$FOLON_OPTIMIZATION_DIR/folon_steam_deck_optimization.zip" -d "$FOLON_OPTIMIZATION_DIR"
