@@ -2,7 +2,7 @@
 
 echo "---------------------"
 echo ""
-echo "Fallout 4 Downgrader for Steam Deck / Linux by krupar"
+echo "Ultimate Fallout London script for Steam Deck / Linux by krupar"
 echo ""
 echo "---------------------"
 sleep 1
