@@ -136,7 +136,7 @@ echo $fallout4_appdata_dir
 echo $fallout4_data_dir
 
 response=$(zenity --list \
-    --title="Fallout 4 Preset Selector" \
+    --title="Fallout London Preset Selector" \
     --text="Fallout 4 installation path was found.\n\nPlease select a preset that you wish to apply.\n\n[Potato preset fixes the 1FPS slideshow mode the game sometimes enters]\n\nRecognized path:\n$FALLOUT_4_DIR" \
     --radiolist \
     --column="Select" --column="Preset" \
@@ -145,10 +145,11 @@ response=$(zenity --list \
     FALSE "Potato" \
     --width=450 --height=400)
 
-# Check the result
-if [ -z "$response" ]; then
-    echo "No preset selected. Exiting."
-else
+# Check zenity exit code
+if [ $? -ne 0 ]; then
+    echo "Cancel was pressed or the dialog was closed. Exiting."
+    exit 1
+fi
 
 	# Handle each choice
 	if [ "$response" == "Optimized (Recommended)" ]; then
