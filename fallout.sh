@@ -588,12 +588,15 @@ if [ "$LAST_STEP" -lt 5 ]; then
 
     echo "Moving downloaded content and cleaning up..."
 
-    # Use find to move all files, replacing any existing ones in the target directory
-    find "$STEAMCMD_DIR/linux32/steamapps/content/app_377160/" -type f -exec bash -c '
-        src_file="$1"
-        target_dir="$2/${src_file#"$3"}"
-        mkdir -p "$(dirname "$target_dir")" && mv -f "$src_file" "$target_dir"
-    ' _ {} "$FALLOUT_4_DIR" "$STEAMCMD_DIR/linux32/steamapps/content/app_377160/" \;
+    # Move contents of all 'depot_XXXXX' folders into the target directory
+    find "$STEAMCMD_DIR/linux32/steamapps/content/app_377160/" -type d -name 'depot_*' | while read -r depot_dir; do
+        echo "Processing contents of $depot_dir..."
+        find "$depot_dir" -type f -exec bash -c '
+            src_file="$1"
+            target_dir="$2/${src_file#"$3"}"
+            mkdir -p "$(dirname "$target_dir")" && mv -f "$src_file" "$target_dir"
+        ' _ {} "$FALLOUT_4_DIR" "$depot_dir" \;
+    done
 
     # Ensure specific files like "Fallout4 - Meshes.ba2" are moved to the correct location
     specific_file="$STEAMCMD_DIR/linux32/steamapps/content/app_377160/depot_377163/Data/Fallout4 - Meshes.ba2"
