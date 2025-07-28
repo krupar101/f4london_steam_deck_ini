@@ -61,7 +61,7 @@ if [ "$platform" == "g" ]; then
         WINE_VERSION_NAME=$(jq -r --arg game_id "$GAME_NAME" '.[$game_id].wineVersion.name' "$CONFIG_FILE")
 
         # Check if the WINE_VERSION_NAME matches the specified values
-        if [ "$WINE_VERSION_NAME" == "Proton - Proton-GE-Proton9-10" ] || [ "$WINE_VERSION_NAME" == "Proton - Proton - Experimental" ]; then
+        if [ "$WINE_VERSION_NAME" == "Proton - Proton-GE-Proton9-10" ] || [ "$WINE_VERSION_NAME" == "Proton - Proton - Experimental" ] || [ "$WINE_VERSION_NAME" == "Proton - GE-Proton9-10" ]; then
             printf "${GREEN}Correct Proton version selected in Heroic Launcher: '$WINE_VERSION_NAME'${NC}\n"
         else
             printf "${RED}Wrong Proton Version selected in Heroic Launcher '$WINE_VERSION_NAME'. Please select either 'Proton - Proton-GE-Proton9-10' or 'Proton - Proton - Experimental'.${NC}\n"
