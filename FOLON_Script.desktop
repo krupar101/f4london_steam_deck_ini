@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Run FOLON Script
+Comment=Launches Fallout London setup script
+Exec=bash -c 'curl -s https://raw.githubusercontent.com/krupar101/f4london_steam_deck_ini/refs/heads/main/ultimate_folon_script.sh | bash'
+Icon=utilities-terminal
+Terminal=true
+Type=Application
+Categories=Game;
