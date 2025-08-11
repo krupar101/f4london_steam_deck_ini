@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 echo "---------------------"
 echo ""
@@ -20,14 +19,13 @@ SSD_F4_LAUNCHER_FILE="$HOME/.steam/steam/steamapps/common/Fallout 4/$F4_LAUNCHER
 HEROIC_PREFIX_FILE="$HOME/.var/app/com.heroicgameslauncher.hgl/config/heroic/GamesConfig/1998527297.json"
 
 select_gog_or_steam_to_update_or_install() {
-  zenity --question \
-    --text="Which Version of Fallout 4 do you own?" \
-    --width="450" \
-    --ok-label="GoG" \
-    --cancel-label="Steam" \
-    --title="Fallout 4 version selection"
-
-  if [ $? -eq 0 ]; then
+  if zenity --question \
+      --text="Which Version of Fallout 4 do you own?" \
+      --width="450" \
+      --ok-label="GoG" \
+      --cancel-label="Steam" \
+      --title="Fallout 4 version selection"
+  then
     echo "GoG Selected"
     F4_VERSION="GOG"
   else
@@ -37,7 +35,7 @@ select_gog_or_steam_to_update_or_install() {
 }
 
 check_if_sd_card_is_mounted_and_set_proton_f4_paths() {
-  # Find first mount under /run/media (handles spaces like 'Steam Deck SD')
+  # First mount under /run/media (handle \x20 -> space just in case)
   SD_MOUNT="$(findmnt -rn -o TARGET | awk '/^\/run\/media/ {print; exit}' | sed -E 's/\\x20/ /g')"
 
   if [ -n "$SD_MOUNT" ]; then
@@ -55,7 +53,6 @@ find_fallout4_heroic_install_path() {
     exit 1
   fi
 
-  # Find 'Fallout 4' install path in Heroic JSON
   install_path="$(jq -r '.installed[] | select(.install_path | contains("Fallout 4")) | .install_path' "$HEROIC_CONFIG_FILE")"
 
   if [[ -n "$install_path" && "$install_path" != "null" ]]; then
@@ -185,7 +182,7 @@ fi
 
 curl -L -o "$FOLON_OPTIMIZATION_DIR/folon_steam_deck_optimization.zip" "$ZIP_URL"
 
-# Ensure targets exist before unzipping (avoids failures on first run)
+# Ensure targets exist before unzipping (first run safety)
 mkdir -p "$fallout4_appdata_dir" "$fallout4_mygames_dir" "$fallout4_f4se_dir" "$fallout4_data_dir"
 
 unzip -o "$FOLON_OPTIMIZATION_DIR/folon_steam_deck_optimization.zip" -d "$FOLON_OPTIMIZATION_DIR"
