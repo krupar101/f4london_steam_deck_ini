@@ -31,15 +31,15 @@ select_gog_or_steam_to_update_or_install() {
 }
 
 check_if_sd_card_is_mounted_and_set_proton_f4_paths() {
-	# Function to automatically detect the SD card mount location and set Proton Directory and Fallout 4 launcher Directory for installation detection
-	SD_MOUNT=$(findmnt -rn -o TARGET | grep -F '/run/media' | head -n 1)
+    # Find mount point that starts with /run/media
+    SD_MOUNT=$(findmnt -rn -o TARGET | grep -F "/run/media" | head -n 1)
 
-	if [ -n "$SD_MOUNT" ]; then
-		echo "SD Card is mounted at: $SD_MOUNT"
-		SD_CARD_F4_LAUNCHER_FILE="$SD_MOUNT/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
-	else
-		echo "SD Card is not mounted."
-	fi
+    if [ -n "$SD_MOUNT" ]; then
+        echo "SD Card is mounted at: $SD_MOUNT"
+        SD_CARD_F4_LAUNCHER_FILE="$SD_MOUNT/steamapps/common/Fallout 4/$F4_LAUNCHER_NAME"
+    else
+        echo "SD Card is not mounted."
+    fi
 }
 
 find_fallout4_heroic_install_path() {
@@ -104,10 +104,14 @@ check_if_fallout_4_is_installed() {
 		echo "Fallout 4 Installation was not found. Exiting the script"
 		exit
 	fi
+
 }
+
+
 
 select_gog_or_steam_to_update_or_install
 check_if_fallout_4_is_installed
+
 
 echo $FALLOUT_4_DIR
 
@@ -146,19 +150,20 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Handle each choice
-if [ "$response" == "Optimized (Recommended)" ]; then
-    echo "Applying Optimized (Recommended) preset..."
-    LINK_PREFIX=""
-elif [ "$response" == "Medium" ]; then
-    echo "Applying Medium preset..."
-    LINK_PREFIX="medium_"
-elif [ "$response" == "Potato" ]; then
-    echo "Applying Potato preset..."
-    LINK_PREFIX="potato_"
-else
-    echo "Unknown option selected. Exiting."
-    exit 1
+	# Handle each choice
+	if [ "$response" == "Optimized (Recommended)" ]; then
+	    echo "Applying Optimized (Recommended) preset..."
+	    LINK_PREFIX=""
+	elif [ "$response" == "Medium" ]; then
+	    echo "Applying Medium preset..."
+	    LINK_PREFIX="medium_"
+	elif [ "$response" == "Potato" ]; then
+	    echo "Applying Potato preset..."
+	    LINK_PREFIX="potato_"
+	else
+	    echo "Unknown option selected. Exiting."
+	    exit 1
+	    
 fi
 
 FOLON_OPTIMIZATION_DIR="$HOME/Downloads/folon_optimization"
