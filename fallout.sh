@@ -584,46 +584,30 @@ fi
 # Step 5: Move downloaded content and clean up
 if [ "$LAST_STEP" -lt 5 ]; then
 
-    depot_download_location_choice
+	depot_download_location_choice
 
-    echo "Moving downloaded content and cleaning up..."
+	echo "Moving downloaded content and cleaning up..."
+	rsync -av --remove-source-files "$STEAMCMD_DIR/linux32/steamapps/content/app_377160/"*/ "$FALLOUT_4_DIR/"
 
-    # Move contents of all 'depot_XXXXX' folders into the target directory
-    find "$STEAMCMD_DIR/linux32/steamapps/content/app_377160/" -type d -name 'depot_*' | while read -r depot_dir; do
-        echo "Processing contents of $depot_dir..."
-        find "$depot_dir" -type f -exec bash -c '
-            src_file="$1"
-            target_dir="$2/${src_file#"$3"}"
-            mkdir -p "$(dirname "$target_dir")" && mv -f "$src_file" "$target_dir"
-        ' _ {} "$FALLOUT_4_DIR" "$depot_dir" \;
-    done
+	# Manually move and overwrite the Fallout4 - Meshes.ba2 file
+	if [ -f "$STEAMCMD_DIR/linux32/steamapps/content/app_377160/depot_377163/Data/Fallout4 - Meshes.ba2" ]; then
+		mv -f "$STEAMCMD_DIR/linux32/steamapps/content/app_377160/depot_377163/Data/Fallout4 - Meshes.ba2" "$FALLOUT_4_DIR/Data/"
+	fi
 
-    # Ensure specific files like "Fallout4 - Meshes.ba2" are moved to the correct location
-    specific_file="$STEAMCMD_DIR/linux32/steamapps/content/app_377160/depot_377163/Data/Fallout4 - Meshes.ba2"
-    if [ -f "$specific_file" ]; then
-        echo "Manually ensuring Fallout4 - Meshes.ba2 is placed correctly."
-        mv -f "$specific_file" "$FALLOUT_4_DIR/Data/"
-    fi
+	# Remove empty directories
+	find "$STEAMCMD_DIR/linux32/steamapps/content/app_377160/" -type d -empty -delete
 
-    # Remove empty directories
-    echo "Removing empty directories..."
-    find "$STEAMCMD_DIR/linux32/steamapps/content/app_377160/" -type d -empty -delete
-
-    # Verify if any files are left
-    remaining_files=$(find "$STEAMCMD_DIR/linux32/steamapps/content/app_377160/" -type f)
-    if [ -n "$remaining_files" ]; then
-        echo "Error: Some files still remain after attempting to move. Manual intervention required."
-        echo "Remaining files:"
-        echo "$remaining_files"
-        zenity --info --title="Manual Intervention Required" --width="450" \
-            --text="Some files could not be moved automatically. Please manually move the remaining files from '$STEAMCMD_DIR/linux32/steamapps/content/app_377160/' to '$FALLOUT_4_DIR'.\n\nDo not move folders starting with 'depot_'; move their content instead.\n\nClick OK after completing the manual process." 2>/dev/null
-    else
-        echo "All files moved successfully."
-        rm -rf "$STEAMCMD_DIR"
-        rm "$DOWNGRADE_LIST_PATH"
-    fi
-
-    update_progress 5
+	# Check if there are any files left in the subfolders
+	if find "$STEAMCMD_DIR/linux32/steamapps/content/app_377160/" -mindepth 1 -type d | read; then
+	    echo "Error: One or more files need to be moved manually."
+	    echo "File(s) still present:"
+	    find "$STEAMCMD_DIR/linux32/steamapps/content/app_377160/" -type f
+	    zenity --info --title="Manual Intervention Required" --width="450" --text="Some files could not be moved. Please move the remaining files manually from '$STEAMCMD_DIR/linux32/steamapps/content/app_377160/' to '$FALLOUT_4_DIR'. However, do not move folders starting with 'depot_'. Move their content. Normally it should only be one file, called Fallout4 - Meshes.ba2 that has to go into /Data/.\n\nClick OK when you have finished moving the files to continue." 2>/dev/null
+	else
+	    rm -rf "$STEAMCMD_DIR"
+	    rm "$DOWNGRADE_LIST_PATH"
+	fi
+	update_progress 5
 fi
 
 # Step 6: Check for Fallout: London installation
@@ -678,6 +662,22 @@ if [ "$LAST_STEP" -lt 7 ]; then
 			echo "Drive H: successfully created pointing to $FALLOUT_4_DIR"
 		else
 			echo "Failed to create Drive H:"
+			exit
+		fi
+
+  		# Remove existing symlink if it exists
+		if [ -L "$WINEPREFIX/dosdevices/i:" ]; then
+			rm "$WINEPREFIX/dosdevices/i:"
+		fi
+  
+   		# Create the new symlink
+  		ln -s "$FALLOUT_LONDON_DIR" "$WINEPREFIX/dosdevices/i:"
+
+		# Verify the symlink
+		if [ -L "$WINEPREFIX/dosdevices/i:" ]; then
+			echo "Drive I: successfully created pointing to $FALLOUT_LONDON_DIR"
+		else
+			echo "Failed to create Drive I:"
 			exit
 		fi
 
@@ -778,7 +778,7 @@ fi
 # Step 11: Ensure that the proper Fallout4.INI is placed correctly.
 if [ "$LAST_STEP" -lt 11 ]; then
 
-	ini_file_desired_checksum="82cfb36d003551ee5db7fb3321e830e1bceed53aa74aa30bb49bf0278612a9d7"
+	ini_file_desired_checksum="bcb048a85fec21d99c4a1b06a32d5ebffd93e0ba6301321e501162dbfb300748"
 	fallout4_mygames_dir="$FALLOUT_4_STEAMUSER_DIR/Documents/My Games/Fallout4"
 	file_path="$fallout4_mygames_dir/Fallout4.INI"
 	computed_checksum=$(sha256sum "$file_path" | awk '{ print $1 }')
