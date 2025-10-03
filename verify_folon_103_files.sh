@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # set -euo pipefail
 
+echo "FINAL"
+
 # Fallout London 1.0.3 verifier.
 # This script verifies the integrity of the Fallout London installation files
 # by calculating SHA256 hashes and comparing them against an embedded manifest.
