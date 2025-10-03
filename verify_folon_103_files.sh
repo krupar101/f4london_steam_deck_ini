@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-set -euo pipefail
+# set -euo pipefail
 
 # Fallout London 1.0.3 verifier.
+# This script verifies the integrity of the Fallout London installation files
+# by calculating SHA256 hashes and comparing them against an embedded manifest.
 
 RED=$(printf '\033[31m'); GRN=$(printf '\033[32m'); YLW=$(printf '\033[33m'); BLU=$(printf '\033[34m'); RST=$(printf '\033[0m')
 BOLD=$(printf '\033[1m'); NORM=$(printf '\033[22m')
@@ -9,13 +11,14 @@ BOLD=$(printf '\033[1m'); NORM=$(printf '\033[22m')
 # Ensure we're using bash and have sha256sum
 [ -n "${BASH_VERSION:-}" ] || { echo "Please run with bash"; exit 1; }
 
-# MODIFICATION 1: Use command -v AND explicitly check for empty output to ensure the error is always printed.
+# Robust sha256sum check.
 if ! command -v sha256sum >/dev/null; then
-    echo "${RED}Error:${RST} sha256sum not found" >&2 # Write to standard error
+    echo "${RED}Error:${RST} sha256sum not found. Please ensure the 'coreutils' package is installed." >&2
     exit 1
 fi
 
-# ---------- EMBEDDED MANIFEST (paste your generated lines between the markers) ----------
+# ---------- EMBEDDED MANIFEST (Fallout London 1.0.3) ----------
+# NOTE: The closing delimiter __MANIFEST__ MUST be on a line by itself with NO leading whitespace.
 MANIFEST="$(cat <<'__MANIFEST__'
 0e19736e87202938d565f1471d0820979a95282c24a0a2b8b81c94a3599cd56b  bink2w64.dll
 d4210f400bcf3bc2553fc7c62493e96554c1b3b82d346db8adc84c75cea124d6  cudart64_75.dll
@@ -611,9 +614,9 @@ b3718d8363abaf32503b0ec658627076927c23d4d96f4827397c6d1ae8b8af42  steam_api64.dl
 fa0d4aa87be625676612fcb46b6d723b7e6eb68d383a712e49a5584d50c457d8  Ultra.ini
 b72ad8c4a9885146cb8f0d4918611a57829b698f9ac4b684080c16cbc74d3b89  WinHTTP.dll
 87f937426321b3ee6c4c48ad3b73c815ed76ee605fd527b30c527fc7821fe86e  xSE PluginPreloader.xml
+
 __MANIFEST__
 )"
-
 # -------------------------------------------------------------------------
 
 if [[ "$MANIFEST" == *"REPLACE THIS LINE"* ]]; then
@@ -630,7 +633,7 @@ TARGET_DIR=${TARGET_DIR##\'}
 TARGET_DIR=${TARGET_DIR%%\'}
 TARGET_DIR=${TARGET_DIR##\"}
 TARGET_DIR=${TARGET_DIR%%\"}
-TARGET_DIR=${TARGET_DIR//\\ / }    # unescape spaces from drag&drop
+TARGET_DIR=${TARGET_DIR//\\ / } # unescape spaces from drag&drop
 TARGET_DIR=${TARGET_DIR%/}
 
 if [[ ! -d "$TARGET_DIR" ]]; then
@@ -639,22 +642,34 @@ if [[ ! -d "$TARGET_DIR" ]]; then
 fi
 
 echo "${BLU}${BOLD}Verifying against embedded Fallout London 1.0.3 manifest...${RST}${NORM}"
-declare -A expected  # key: path  value: sha256
-declare -A seen      # to mark files we validated
+declare -A expected # key: path value: sha256
+declare -A seen # to mark files we validated
 
-# Load manifest into map
+# Load manifest into map (Highly robust parsing method)
 while IFS= read -r line; do
   # Skip empty/comment
   [[ -z "$line" || "$line" =~ ^\# ]] && continue
-  
-  # Get hash (first field) and path (the rest)
-  hash="${line%% *}"
-  path="${line#$hash}"
-  
-  # MODIFICATION 2: Clean up leading whitespace in the path variable
-  path=$(echo "$path" | sed -e 's/^[[:space:]]*//')
-  
-  # Use only the first hash and path
+
+  # 1. Normalize the line: remove leading/trailing whitespace and non-printing chars.
+  # This makes the line reliable for splitting.
+  line_clean=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | tr -d '[:cntrl:]')
+
+  # If the line is now empty, skip it
+  [[ -z "$line_clean" ]] && continue
+
+  # 2. Extract hash (first word before the first space)
+  hash="${line_clean%% *}"
+
+  # 3. Extract path (everything after the first space).
+  # This allows the path to contain spaces, which the files clearly do.
+  path="${line_clean#* }"
+
+  # Final trimming of the path using xargs (robust way to handle internal spaces)
+  path=$(echo "$path" | xargs)
+
+  # Safety check: ensure both hash and path are not empty
+  [[ -z "$path" || -z "$hash" ]] && continue
+
   expected["$path"]="$hash"
   seen["$path"]=0
 done <<< "$MANIFEST"
@@ -662,29 +677,41 @@ done <<< "$MANIFEST"
 missing_count=0
 bad_count=0
 
-# Verify expected files exist and match (using the case-insensitive logic)
+# Verify expected files exist and match (with case-insensitivity and error handling)
 for relpath in "${!expected[@]}"; do
-  # --- Case-insensitive path check (already included) ---
+  # --- Case-insensitive path check ---
   dirpath=$(dirname -- "$TARGET_DIR/$relpath")
   filename=$(basename -- "$relpath")
 
   abs_path_on_disk=""
+  # Search for the file case-insensitively using find
   while IFS= read -r -d '' found_file; do
     abs_path_on_disk="$found_file"
-    break 
+    break # Take the first match
   done < <(LC_ALL=C find "$dirpath" -maxdepth 1 -iname "$filename" -type f -print0)
 
-  # Check if file was found
+  # Check if file was found. If not, mark as missing and move to next file.
   if [[ -z "$abs_path_on_disk" ]]; then
     ((missing_count++))
     echo -e "${RED}[MISSING]${RST} $TARGET_DIR/$relpath (or case mismatch)"
     continue
   fi
 
-  abs="$abs_path_on_disk"
-  # --- End case-insensitive path check ---
+  abs="$abs_path_on_disk" # Use the actual path found on disk
 
-  actual_hash=$(sha256sum -- "$abs" | awk '{print $1}')
+  # Calculate hash. Suppress errors (2>/dev/null) to prevent set -e trigger
+  # on permissions issues or unexpected read failures.
+  actual_hash=$(sha256sum -- "$abs" 2>/dev/null | awk '{print $1}')
+
+  # Check if hash calculation failed (e.g., due to permissions or read error)
+  if [[ -z "$actual_hash" ]]; then
+    ((bad_count++))
+    echo -e "${RED}[HASH MISMATCH]${RST} $abs"
+    echo -e "  ${YLW}Reason: ${RST} Could not calculate hash (permission or read error)."
+    seen["$relpath"]=1
+    continue
+  fi
+
   if [[ "$actual_hash" != "${expected[$relpath]}" ]]; then
     ((bad_count++))
     echo -e "${RED}[HASH MISMATCH]${RST} $abs"
@@ -699,9 +726,9 @@ extra_count=0
 # Build a set of all files under target (relative paths)
 while IFS= read -r -d '' f; do
   rel="${f#"$TARGET_DIR/"}"
-  
-  # MODIFICATION 3: Correct key existence check: use ! and check if the key is in the 'expected' map
-  if [[ -z "${expected[$rel]:-}" ]]; then
+  # ignore files not in manifest -> count as extra
+  # Check if key exists in 'expected' array
+  if [[ -z "${expected[$rel]+x}" ]]; then
     ((extra_count++))
     echo -e "${YLW}[EXTRA]${RST} $f"
   fi
@@ -709,9 +736,9 @@ done < <(LC_ALL=C find "$TARGET_DIR" -type f -print0)
 
 echo
 echo "${BOLD}Summary:${NORM}"
-echo "  Missing files:   $missing_count"
+echo "  Missing files:    $missing_count"
 echo "  Hash mismatches: $bad_count"
-echo "  Extra files:     $extra_count"
+echo "  Extra files:      $extra_count"
 
 if (( missing_count==0 && bad_count==0 )); then
   if (( extra_count==0 )); then
