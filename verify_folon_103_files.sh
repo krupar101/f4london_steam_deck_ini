@@ -3,8 +3,7 @@ set -euo pipefail
 
 # Fallout London 1.0.3 verifier (Steam Deck / Linux-friendly)
 # - Pass the Fallout 4 install dir as $1, or the script will prompt.
-# - Uses 'cut' instead of 'awk' for sha256 parsing.
-# - Prints periodic progress and a final summary.
+# - Uses 'cut' for sha256 parsing.
 # - Exit codes: 0=all good (maybe extras), 2=missing/mismatch.
 
 # ------------------------- Pretty colors -------------------------
@@ -21,9 +20,7 @@ command -v sha256sum >/dev/null || { echo "${RED}Error:${RST} sha256sum not foun
 command -v find >/dev/null || { echo "${RED}Error:${RST} find not found"; exit 1; }
 
 # ------------------------- Embedded manifest ----------------------
-# Replace the placeholder block with the FULL contents of your
-# fallout_london_1.0.3_manifest.sha256 (the lines produced by sha256sum).
-# Keep the __MANIFEST__ markers exactly as-is.
+# Replace this heredoc with the FULL contents of fallout_london_1.0.3_manifest.sha256
 MANIFEST="$(cat <<'__MANIFEST__'
 0e19736e87202938d565f1471d0820979a95282c24a0a2b8b81c94a3599cd56b  bink2w64.dll
 d4210f400bcf3bc2553fc7c62493e96554c1b3b82d346db8adc84c75cea124d6  cudart64_75.dll
@@ -622,13 +619,6 @@ b72ad8c4a9885146cb8f0d4918611a57829b698f9ac4b684080c16cbc74d3b89  WinHTTP.dll
 __MANIFEST__
 )"
 
-# Guard: detect if user forgot to paste the manifest
-if [[ "$MANIFEST" == *"REPLACE THIS LINE WITH YOUR FULL MANIFEST LINES"* ]]; then
-  echo "${RED}Error:${RST} You haven't pasted the manifest yet."
-  echo "Open this script and replace the placeholder block with your fallout_london_1.0.3_manifest.sha256."
-  exit 1
-fi
-
 # ------------------- Target directory (arg or prompt) -------------
 if [[ $# -gt 0 ]]; then
   TARGET_DIR="$1"
@@ -637,7 +627,7 @@ else
   read -r TARGET_DIR
 fi
 
-# Sanitise drag & drop / quoting quirks (handles ' and " and escaped spaces)
+# Sanitise drag & drop / quoting quirks
 TARGET_DIR=${TARGET_DIR##\'}
 TARGET_DIR=${TARGET_DIR%%\'}
 TARGET_DIR=${TARGET_DIR##\"}
@@ -653,38 +643,30 @@ fi
 echo -e "${BLU}${BOLD}Verifying against embedded Fallout London 1.0.3 manifest...${RST}${NORM}"
 
 # -------------------- Load manifest into maps ---------------------
-declare -A expected  # key: relative path -> sha256
-declare -A seen      # key: relative path -> 0/1
+declare -A expected  # rel path -> sha256
+declare -A seen      # rel path -> 0/1
 
-# Read the manifest lines; keep paths with spaces intact.
-# Expected format from `sha256sum`: "<hash><two spaces><path>"
 while IFS= read -r line; do
-  # Skip blanks and comments
   [[ -z "$line" || "$line" =~ ^\# ]] && continue
-
-  # First token is hash; remainder (after at least two spaces) is path
+  # Expect "<hash><two spaces><path>"
   hash="${line%% *}"
-  path="${line#*  }"  # after two spaces
-
-  # Fallback: if we didn't split (some tools may use single space)
+  path="${line#*  }"
   if [[ "$path" == "$line" ]]; then
+    # Fallback if manifest has single space
     hash="${line%% *}"
     path="${line#* }"
   fi
-
-  # Basic validation of hash length (64 hex chars for sha256)
   if [[ ! "$hash" =~ ^[0-9a-fA-F]{64}$ ]]; then
     echo -e "${YLW}Warning:${RST} Skipping malformed line: $line"
     continue
   fi
-
   expected["$path"]="$hash"
   seen["$path"]=0
 done <<< "$MANIFEST"
 
 total_expected=${#expected[@]}
 if (( total_expected == 0 )); then
-  echo "${RED}Error:${RST} Manifest appears empty after parsing."
+  echo "${RED}Error:${RST} Manifest appears empty after parsing. Did you paste the full sha256 list?"
   exit 1
 fi
 
@@ -699,7 +681,6 @@ for relpath in "${!expected[@]}"; do
     ((missing_count++))
     echo -e "${RED}[MISSING]${RST} $abs"
   else
-    # Use cut for POSIX-friendly first-field extraction
     actual_hash=$(sha256sum -- "$abs" | cut -d' ' -f1)
     if [[ "$actual_hash" != "${expected[$relpath]}" ]]; then
       ((bad_count++))
@@ -709,25 +690,20 @@ for relpath in "${!expected[@]}"; do
     fi
     seen["$relpath"]=1
   fi
-
   ((checked++))
-  # Progress every 200 files
   if (( checked % 200 == 0 )); then
     echo -e "${BLU}[Progress]${RST} Checked $checked/$total_expected files..."
   fi
 done
 
-# Final progress if not multiple of 200
 if (( checked % 200 != 0 )); then
   echo -e "${BLU}[Progress]${RST} Checked $checked/$total_expected files."
 fi
 
 # ----------------------- Find unexpected files --------------------
 extra_count=0
-# All files under target; print0 to be robust to spaces/newlines
 while IFS= read -r -d '' f; do
   rel="${f#"$TARGET_DIR/"}"
-  # Count as extra if not in manifest
   if [[ -z "${expected[$rel]+x}" ]]; then
     ((extra_count++))
     echo -e "${YLW}[EXTRA]${RST} $f"
