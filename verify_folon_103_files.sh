@@ -6,6 +6,8 @@ set -euo pipefail
 RED=$(printf '\033[31m'); GRN=$(printf '\033[32m'); YLW=$(printf '\033[33m'); BLU=$(printf '\033[34m'); RST=$(printf '\033[0m')
 BOLD=$(printf '\033[1m'); NORM=$(printf '\033[22m')
 
+echo "Updated 1"
+
 # Ensure we're using bash and have sha256sum
 [ -n "${BASH_VERSION:-}" ] || { echo "Please run with bash"; exit 1; }
 command -v sha256sum >/dev/null || { echo "${RED}Error:${RST} sha256sum not found"; exit 1; }
