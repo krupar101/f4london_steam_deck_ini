@@ -1,26 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Fallout London 1.0.3 verifier (Steam Deck / Linux-friendly)
-# - Pass the Fallout 4 install dir as $1, or the script will prompt.
-# - Uses 'cut' for sha256 parsing.
-# - Exit codes: 0=all good (maybe extras), 2=missing/mismatch.
+# Fallout London 1.0.3 verifier (robust parsing, CRLF-safe)
 
-# ------------------------- Pretty colors -------------------------
-if [ -t 1 ]; then
-  RED=$(printf '\033[31m'); GRN=$(printf '\033[32m'); YLW=$(printf '\033[33m'); BLU=$(printf '\033[34m'); RST=$(printf '\033[0m')
-  BOLD=$(printf '\033[1m'); NORM=$(printf '\033[22m')
-else
-  RED=""; GRN=""; YLW=""; BLU=""; RST=""; BOLD=""; NORM=""
-fi
+RED=$(printf '\033[31m'); GRN=$(printf '\033[32m'); YLW=$(printf '\033[33m'); BLU=$(printf '\033[34m'); RST=$(printf '\033[0m')
+BOLD=$(printf '\033[1m'); NORM=$(printf '\033[22m')
 
-# --------------------- Pre-flight sanity checks -------------------
 [ -n "${BASH_VERSION:-}" ] || { echo "Please run with bash"; exit 1; }
 command -v sha256sum >/dev/null || { echo "${RED}Error:${RST} sha256sum not found"; exit 1; }
 command -v find >/dev/null || { echo "${RED}Error:${RST} find not found"; exit 1; }
 
-# ------------------------- Embedded manifest ----------------------
-# Replace this heredoc with the FULL contents of fallout_london_1.0.3_manifest.sha256
+# ---------- EMBEDDED MANIFEST ----------
+# Paste your FULL fallout_london_1.0.3_manifest.sha256 here.
 MANIFEST="$(cat <<'__MANIFEST__'
 0e19736e87202938d565f1471d0820979a95282c24a0a2b8b81c94a3599cd56b  bink2w64.dll
 d4210f400bcf3bc2553fc7c62493e96554c1b3b82d346db8adc84c75cea124d6  cudart64_75.dll
@@ -619,15 +610,10 @@ b72ad8c4a9885146cb8f0d4918611a57829b698f9ac4b684080c16cbc74d3b89  WinHTTP.dll
 __MANIFEST__
 )"
 
-# ------------------- Target directory (arg or prompt) -------------
-if [[ $# -gt 0 ]]; then
-  TARGET_DIR="$1"
-else
-  echo "Drag & drop the Fallout 4 installation directory to verify, then press Enter."
-  read -r TARGET_DIR
-fi
+echo "Drag & drop the Fallout 4 installation directory to verify, then press Enter."
+read -r TARGET_DIR
 
-# Sanitise drag & drop / quoting quirks
+# Sanitize Konsole drag&drop quotes/escapes
 TARGET_DIR=${TARGET_DIR##\'}
 TARGET_DIR=${TARGET_DIR%%\'}
 TARGET_DIR=${TARGET_DIR##\"}
@@ -642,33 +628,45 @@ fi
 
 echo -e "${BLU}${BOLD}Verifying against embedded Fallout London 1.0.3 manifest...${RST}${NORM}"
 
-# -------------------- Load manifest into maps ---------------------
-declare -A expected  # rel path -> sha256
-declare -A seen      # rel path -> 0/1
+declare -A expected   # relpath -> sha256
+declare -A seen       # relpath -> 0/1
 
+# --- Robust manifest parsing (handles tabs, multiple spaces, optional '*', CRLF) ---
+parsed=0
+skipped=0
 while IFS= read -r line; do
+  # Trim trailing CR if manifest has Windows CRLF
+  line=${line%$'\r'}
   [[ -z "$line" || "$line" =~ ^\# ]] && continue
-  # Expect "<hash><two spaces><path>"
-  hash="${line%% *}"
-  path="${line#*  }"
-  if [[ "$path" == "$line" ]]; then
-    # Fallback if manifest has single space
-    hash="${line%% *}"
-    path="${line#* }"
-  fi
-  if [[ ! "$hash" =~ ^[0-9a-fA-F]{64}$ ]]; then
+
+  # Regex: 64-hex hash, whitespace+, optional '*', then path (anything)
+  if [[ "$line" =~ ^([0-9A-Fa-f]{64})[[:space:]]+\*?(.*)$ ]]; then
+    hash="${BASH_REMATCH[1]}"
+    path="${BASH_REMATCH[2]}"
+    # Clean possible CRs again (paranoia)
+    hash=${hash%$'\r'}
+    path=${path%$'\r'}
+
+    if [[ -z "$path" ]]; then
+      ((skipped++))
+      echo -e "${YLW}Warning:${RST} Skipping line with empty path: $line"
+      continue
+    fi
+    expected["$path"]="$hash"
+    seen["$path"]=0
+    ((parsed++))
+  else
+    ((skipped++))
     echo -e "${YLW}Warning:${RST} Skipping malformed line: $line"
-    continue
   fi
-  expected["$path"]="$hash"
-  seen["$path"]=0
 done <<< "$MANIFEST"
 
-total_expected=${#expected[@]}
-if (( total_expected == 0 )); then
-  echo "${RED}Error:${RST} Manifest appears empty after parsing. Did you paste the full sha256 list?"
+if (( parsed == 0 )); then
+  echo -e "${RED}Error:${RST} Manifest parsing found 0 entries. Check spacing/format or CRLF."
   exit 1
 fi
+
+echo -e "${BLU}[Info]${RST} Parsed $parsed manifest entries${skipped:+, skipped $skipped malformed}."
 
 # --------------------------- Verification -------------------------
 missing_count=0
@@ -680,27 +678,30 @@ for relpath in "${!expected[@]}"; do
   if [[ ! -f "$abs" ]]; then
     ((missing_count++))
     echo -e "${RED}[MISSING]${RST} $abs"
-  else
-    actual_hash=$(sha256sum -- "$abs" | cut -d' ' -f1)
-    if [[ "$actual_hash" != "${expected[$relpath]}" ]]; then
-      ((bad_count++))
-      echo -e "${RED}[HASH MISMATCH]${RST} $abs"
-      echo -e "  ${YLW}expected:${RST} ${expected[$relpath]}"
-      echo -e "  ${YLW}actual:  ${RST} $actual_hash"
-    fi
-    seen["$relpath"]=1
+    continue
   fi
+
+  # Use cut (safer than awk when locales/whitespace get funky)
+  actual_hash=$(sha256sum -- "$abs" | cut -d' ' -f1)
+  if [[ "$actual_hash" != "${expected[$relpath]}" ]]; then
+    ((bad_count++))
+    echo -e "${RED}[HASH MISMATCH]${RST} $abs"
+    echo -e "  ${YLW}expected:${RST} ${expected[$relpath]}"
+    echo -e "  ${YLW}actual:  ${RST} $actual_hash"
+  fi
+  seen["$relpath"]=1
+
   ((checked++))
   if (( checked % 200 == 0 )); then
-    echo -e "${BLU}[Progress]${RST} Checked $checked/$total_expected files..."
+    echo -e "${BLU}[Progress]${RST} Checked $checked/$parsed files..."
   fi
 done
 
 if (( checked % 200 != 0 )); then
-  echo -e "${BLU}[Progress]${RST} Checked $checked/$total_expected files."
+  echo -e "${BLU}[Progress]${RST} Checked $checked/$parsed files."
 fi
 
-# ----------------------- Find unexpected files --------------------
+# ----------------------- Find unexpected extra files --------------------
 extra_count=0
 while IFS= read -r -d '' f; do
   rel="${f#"$TARGET_DIR/"}"
@@ -713,7 +714,7 @@ done < <(LC_ALL=C find "$TARGET_DIR" -type f -print0)
 # ----------------------------- Summary ----------------------------
 echo
 echo -e "${BOLD}Summary:${NORM}"
-echo "  Expected files:  $total_expected"
+echo "  Expected files:  $parsed"
 echo "  Missing files:   $missing_count"
 echo "  Hash mismatches: $bad_count"
 echo "  Extra files:     $extra_count"
