@@ -611,14 +611,20 @@ __MANIFEST__
 
 # -------------------------------------------------------------------------
 
+
 if [[ "$MANIFEST" == *"REPLACE THIS LINE"* ]]; then
   echo "${RED}Error:${RST} You haven't pasted the manifest yet."
   echo "Open this script and replace the placeholder block with the contents of your fallout_london_1.0.3_manifest.sha256."
   exit 1
 fi
 
-echo "Drag & drop the Fallout 4 installation directory to verify, then press Enter."
-read -r TARGET_DIR
+# Accept dir via $1 or fall back to interactive prompt
+if [[ $# -gt 0 ]]; then
+  TARGET_DIR="$1"
+else
+  echo "Drag & drop the Fallout 4 installation directory to verify, then press Enter."
+  read -r TARGET_DIR
+fi
 
 # Sanitise Konsole drag&drop quirks
 TARGET_DIR=${TARGET_DIR##\'}
@@ -657,6 +663,8 @@ done <<< "$MANIFEST"
 
 missing_count=0
 bad_count=0
+checked=0
+total_expected=${#expected[@]}
 
 # Verify expected files exist and match
 for relpath in "${!expected[@]}"; do
@@ -664,17 +672,28 @@ for relpath in "${!expected[@]}"; do
   if [[ ! -f "$abs" ]]; then
     ((missing_count++))
     echo -e "${RED}[MISSING]${RST} $abs"
-    continue
+  else
+    # cut instead of awk for broader POSIX compatibility
+    actual_hash=$(sha256sum -- "$abs" | cut -d' ' -f1)
+    if [[ "$actual_hash" != "${expected[$relpath]}" ]]; then
+      ((bad_count++))
+      echo -e "${RED}[HASH MISMATCH]${RST} $abs"
+      echo -e "  ${YLW}expected:${RST} ${expected[$relpath]}"
+      echo -e "  ${YLW}actual:  ${RST} $actual_hash"
+    fi
+    seen["$relpath"]=1
   fi
-  actual_hash=$(sha256sum -- "$abs" | awk '{print $1}')
-  if [[ "$actual_hash" != "${expected[$relpath]}" ]]; then
-    ((bad_count++))
-    echo -e "${RED}[HASH MISMATCH]${RST} $abs"
-    echo -e "  ${YLW}expected:${RST} ${expected[$relpath]}"
-    echo -e "  ${YLW}actual:  ${RST} $actual_hash"
+
+  ((checked++))
+  if (( checked % 200 == 0 )); then
+    echo -e "${BLU}[Progress]${RST} Checked $checked/$total_expected files..."
   fi
-  seen["$relpath"]=1
 done
+
+# If total is not a multiple of 200, print a final progress line
+if (( checked % 200 != 0 )); then
+  echo -e "${BLU}[Progress]${RST} Checked $checked/$total_expected files."
+fi
 
 # Find unexpected extra files
 extra_count=0
