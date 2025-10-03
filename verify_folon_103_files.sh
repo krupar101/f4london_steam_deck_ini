@@ -8,7 +8,12 @@ BOLD=$(printf '\033[1m'); NORM=$(printf '\033[22m')
 
 # Ensure we're using bash and have sha256sum
 [ -n "${BASH_VERSION:-}" ] || { echo "Please run with bash"; exit 1; }
-command -v sha256sum >/dev/null || { echo "${RED}Error:${RST} sha256sum not found"; exit 1; }
+
+# MODIFICATION 1: Use command -v AND explicitly check for empty output to ensure the error is always printed.
+if ! command -v sha256sum >/dev/null; then
+    echo "${RED}Error:${RST} sha256sum not found" >&2 # Write to standard error
+    exit 1
+fi
 
 # ---------- EMBEDDED MANIFEST (paste your generated lines between the markers) ----------
 MANIFEST="$(cat <<'__MANIFEST__'
@@ -625,7 +630,7 @@ TARGET_DIR=${TARGET_DIR##\'}
 TARGET_DIR=${TARGET_DIR%%\'}
 TARGET_DIR=${TARGET_DIR##\"}
 TARGET_DIR=${TARGET_DIR%%\"}
-TARGET_DIR=${TARGET_DIR//\\ / }   # unescape spaces from drag&drop
+TARGET_DIR=${TARGET_DIR//\\ / }    # unescape spaces from drag&drop
 TARGET_DIR=${TARGET_DIR%/}
 
 if [[ ! -d "$TARGET_DIR" ]]; then
@@ -641,16 +646,15 @@ declare -A seen      # to mark files we validated
 while IFS= read -r line; do
   # Skip empty/comment
   [[ -z "$line" || "$line" =~ ^\# ]] && continue
-  # Expect format: "<hash><spaces><path>"
-  # Use first field as hash, rest as path (preserve spaces)
+  
+  # Get hash (first field) and path (the rest)
   hash="${line%% *}"
-  path="${line#*  }"  # after two spaces produced by sha256sum
-  # Fallback if spacing differs
-  if [[ "$path" == "$line" ]]; then
-    # couldn't split on double-space; try single split
-    hash="${line%% *}"
-    path="${line#* }"
-  fi
+  path="${line#$hash}"
+  
+  # MODIFICATION 2: Clean up leading whitespace in the path variable
+  path=$(echo "$path" | sed -e 's/^[[:space:]]*//')
+  
+  # Use only the first hash and path
   expected["$path"]="$hash"
   seen["$path"]=0
 done <<< "$MANIFEST"
@@ -658,21 +662,16 @@ done <<< "$MANIFEST"
 missing_count=0
 bad_count=0
 
-# Verify expected files exist and match
+# Verify expected files exist and match (using the case-insensitive logic)
 for relpath in "${!expected[@]}"; do
-  # --- MODIFICATION START: Use find -iname for case-insensitive path check ---
-
-  # Get just the directory and filename parts for the find command
+  # --- Case-insensitive path check (already included) ---
   dirpath=$(dirname -- "$TARGET_DIR/$relpath")
   filename=$(basename -- "$relpath")
 
-  # Use find -iname to locate the file, ignoring case
-  # Note: This is slower than a direct file check but necessary for case-insensitivity.
-  # Use -print0 and read -r -d '' to safely handle spaces/special characters
   abs_path_on_disk=""
   while IFS= read -r -d '' found_file; do
     abs_path_on_disk="$found_file"
-    break # Take the first match
+    break 
   done < <(LC_ALL=C find "$dirpath" -maxdepth 1 -iname "$filename" -type f -print0)
 
   # Check if file was found
@@ -682,8 +681,8 @@ for relpath in "${!expected[@]}"; do
     continue
   fi
 
-  abs="$abs_path_on_disk" # Use the actual path found on disk
-  # --- MODIFICATION END ---
+  abs="$abs_path_on_disk"
+  # --- End case-insensitive path check ---
 
   actual_hash=$(sha256sum -- "$abs" | awk '{print $1}')
   if [[ "$actual_hash" != "${expected[$relpath]}" ]]; then
@@ -700,8 +699,9 @@ extra_count=0
 # Build a set of all files under target (relative paths)
 while IFS= read -r -d '' f; do
   rel="${f#"$TARGET_DIR/"}"
-  # ignore files not in manifest -> count as extra
-  if [[ -z "${expected[$rel]+x}" ]]; then
+  
+  # MODIFICATION 3: Correct key existence check: use ! and check if the key is in the 'expected' map
+  if [[ -z "${expected[$rel]:-}" ]]; then
     ((extra_count++))
     echo -e "${YLW}[EXTRA]${RST} $f"
   fi
