@@ -1054,7 +1054,7 @@ if [ "$LAST_STEP" -lt 18 ]; then
 
 	FAUDIO_DIR="$HOME/Downloads/faudio"
 	FAudio_Target="$WINEPREFIX/drive_c/windows/system32"
-	# Step 1: Check if the F4_VERSION variable is set to "GOG"
+	# GOG-only FAudio setup
 	if [ "$F4_VERSION" = "GOG" ]; then
 		# Define the path to the Proton prefix
 
@@ -1071,7 +1071,7 @@ if [ "$LAST_STEP" -lt 18 ]; then
 			# Add local bin directory to PATH
 			export WINEPREFIX
 			echo "$WINEPREFIX"
-			# Step 3: Install FAudio using winetricks
+			# Download FAudio binaries for the GOG Proton prefix
 			echo "Installing FAudio"
 
 			#!/bin/bash# Variables
@@ -1107,31 +1107,38 @@ if [ "$LAST_STEP" -lt 18 ]; then
 	update_progress 18
 fi
 
-# Cleanup progress file
-rm -f "$PROGRESS_FILE"
-rm -f "$F4_VERSION_SELECTION_FILE"
-rm -rf "$FAUDIO_DIR"
-
-# Final optional step: run the Steam Deck graphics optimization presets.
+# Step 19: Offer the optional Steam Deck graphics optimization presets.
 # IMPORTANT: Publish optimize_folon_steam_deck.sh and the 3 updated preset ZIPs
 # to the repository's main branch BEFORE distributing this installer.
-if zenity --question --title="Optimize Fallout London?" --width=520 \
-    --ok-label="Yes, optimize" --cancel-label="No, finish" \
-    --text="Fallout London installation is complete.\n\nWould you like to apply an optional Steam Deck optimization preset?\n\nThis will start the preset selector."; then
-    echo "Launching Fallout London Steam Deck optimization script..."
-    # Exact optimization entry point requested by the project maintainer.
-    bash <(curl -s https://raw.githubusercontent.com/krupar101/f4london_steam_deck_ini/refs/heads/main/optimize_folon_steam_deck.sh)
-    optimization_rc=$?
-    if [ "$optimization_rc" -ne 0 ]; then
-        echo "WARNING: Optimization exited with code $optimization_rc."
-        echo "The game installation is complete; optimization can be retried separately."
-        zenity --warning --title="Optimization not completed" --width=520 \
-            --text="Fallout London installed, but the optimization script returned code $optimization_rc. You may run it separately." 2>/dev/null || true
+if [ "$LAST_STEP" -lt 19 ]; then
+    if zenity --question --title="Optimize Fallout London?" --width=520 \
+        --ok-label="Yes, optimize" --cancel-label="No, finish" \
+        --text="Fallout London installation is complete.\n\nWould you like to apply an optional Steam Deck optimization preset?\n\nThis will start the preset selector (Optimized, Medium, Potato).\nThe official High FPS DLL, Buffout and X-Cell will be preserved."; then
+        echo "Launching Fallout London Steam Deck optimization script..."
+        # Exact optimization entry point requested by the project maintainer.
+        bash <(curl -s https://raw.githubusercontent.com/krupar101/f4london_steam_deck_ini/refs/heads/main/optimize_folon_steam_deck.sh)
+        optimization_rc=$?
+        if [ "$optimization_rc" -ne 0 ]; then
+            echo "WARNING: Optimization exited with code $optimization_rc."
+            echo "The game installation is complete; optimization can be retried separately."
+            zenity --warning --title="Optimization not completed" --width=520 \
+                --text="Fallout London installed, but the optimization script returned code $optimization_rc. You may run it separately." 2>/dev/null || true
+        fi
+    else
+        echo "Optional optimization skipped. Fallout London installation is complete."
     fi
-else
-    echo "Optional optimization skipped. Fallout London installation is complete."
+
+    # The base installation is complete whether optimization ran or was skipped.
+    # If the optimizer fails, users can rerun it separately.
+    update_progress 19
 fi
 
+# Cleanup progress and version-selection files only after Step 19.
+rm -f "$PROGRESS_FILE"
+rm -f "$F4_VERSION_SELECTION_FILE"
+if [ -n "${FAUDIO_DIR:-}" ]; then
+    rm -rf -- "$FAUDIO_DIR"
+fi
 
 if [ "$F4_VERSION" == "STEAM" ]; then
 	text="<b>All steps completed successfully!</b>\n\nYou can now close the terminal / Konsole.\nFallout London can be launched from Fallout 4 Steam page."
